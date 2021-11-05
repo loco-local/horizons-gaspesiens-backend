@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 const MembershipController = require('../controller/MembershipController')
 
-router.get(
+router.post(
     '/membership',
     MembershipController.get
 )
