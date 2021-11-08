@@ -1,4 +1,4 @@
 {
   "useMinify": false,
-  "googleApiKey": ""
+  "googleCredentialsFilePath": "/home/chenzo/Documents/Site web loco local/membres-google-credentials-local.json"
 }
