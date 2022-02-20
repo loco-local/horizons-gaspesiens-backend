@@ -36,7 +36,7 @@ app.use(function (req, res, next) {
 
 const port = config.getConfig().port || 4105
 server.listen(port, function () {
-    console.log('hg backend app listening on environment', app.get('env'))
+    console.log('hg backend app listening on environment port ' + port , app.get('env'))
 })
 
 module.exports = app

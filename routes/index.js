@@ -7,4 +7,9 @@ router.post(
     MembershipController.get
 )
 
+router.get(
+    '/membership/send_reminder',
+    MembershipController.sendReminders
+)
+
 module.exports = router

@@ -1,57 +1,118 @@
 const {google} = require('googleapis');
 const config = require('../config')
+const redis = require('redis');
+const redisClient = redis.createClient({
+    host: '<hostname>',
+    port: '',
+    password: '<password>'
+});
 const GOOGLE_CREDENTIALS_FILE_PATH = config.getConfig().googleCredentialsFilePath;
 const GOOGLE_API_SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
-const EMAIL_ROW_INDEX = 4;
-const SUBSCRIPTION_RENEWAL_DATE_INDEX = 17;
 const moment = require("moment");
+const MembershipRow = require('../MembershipRow');
 const MembershipController = {};
 MembershipController.get = async function (req, res) {
     const {email} = req.body
     let emailToFind = email;
-    const auth = new google.auth.GoogleAuth({
-        keyFile: GOOGLE_CREDENTIALS_FILE_PATH,
-        scopes: GOOGLE_API_SCOPES,
-    });
-    const sheets = google.sheets({version: 'v4', auth});
     let rowsWithEmail = [];
+    const sheets = MembershipController._buildSheetsApi();
     sheets.spreadsheets.values.get({
-        spreadsheetId: '1_KH43HPFDERGgB6wmQEPS-cujtw10YKS4I7X3S6Mwio',
+        spreadsheetId: config.getConfig().spreadSheetId,
         range: 'A2:T',
     }, (err, sheetsRes) => {
         if (err) return console.log('The API returned an error: ' + err);
         const rows = sheetsRes.data.values;
+        let status;
         if (rows.length) {
-            // Print columns A and E, which correspond to indices 0 and 4.
             rowsWithEmail = rows.filter((row) => {
-                const email = row[EMAIL_ROW_INDEX];
-                return email.trim().toLowerCase() === emailToFind.trim().toLowerCase();
-            });
-            if (!rowsWithEmail.length) {
-                return res.send({
+                row = new MembershipRow(row);
+                return row.getEmail() === emailToFind.trim().toLowerCase();
+            }).map((row) => {
+                return new MembershipRow(row);
+            })
+            if (rowsWithEmail.length) {
+                status = rowsWithEmail[0].getStatus();
+            } else {
+                status = {
                     status: "inactive",
                     reason: "email not found"
-                });
+                };
             }
-            const rowWithEmail = rowsWithEmail[0];
-            let renewalDate = rowWithEmail[SUBSCRIPTION_RENEWAL_DATE_INDEX];
-            if (renewalDate.trim() === "") {
-                return res.send({
-                    status: "inactive",
-                    reason: "no renewal date"
-                });
-            }
-            renewalDate = moment(renewalDate, "DD/MM/YYYY").add(1, 'Y').toDate()
-            const isActive = new Date() < renewalDate;
-            res.send({
-                status: isActive ? "active" : "inactive",
-                subscriptionRenewalDate: renewalDate.toString()
-            })
+            return res.send(status);
         } else {
             console.log('No data found.');
             res.sendStatus(400);
         }
     });
+};
+
+MembershipController.sendReminders = async function (req, res) {
+    const sheets = MembershipController._buildSheetsApi();
+    const remindersSent = [];
+    sheets.spreadsheets.values.get({
+        spreadsheetId: config.getConfig().spreadSheetId,
+        range: 'A2:T',
+    }, async (err, sheetsRes) => {
+        if (err) return console.log('The API returned an error: ' + err);
+        const rows = sheetsRes.data.values;
+        let status;
+        if (rows.length) {
+            await Promise.all(rows.map(async (row) => {
+                row = new MembershipRow(row);
+                status = row.getStatus();
+                if (status.status === 'inactive') {
+                    let reminder;
+                    if (status.reason === 'no renewal date') {
+                        reminder = await MembershipController.sendReminder(
+                            row,
+                            "never_paid_email"
+                        );
+                    } else {
+                        reminder = await MembershipController.sendReminder(
+                            row,
+                            "inactive_renew_email"
+                        );
+                    }
+                    if (reminder !== false) {
+                        remindersSent.push(reminder);
+                    }
+                } else {
+
+                }
+            }));
+            res.send(remindersSent);
+        } else {
+            console.log('No data found.');
+            res.sendStatus(400);
+        }
+    });
+};
+
+MembershipController.sendReminder = async function (row, reminderKey) {
+    if (row.doesNotWantToBeMember()) {
+        // console.log(row.getEmail())
+        return false;
+    }
+    const key = row.getEmail() + '_' + reminderKey;
+    let emailDateStr = await redisClient.get(key);
+    const emailDate = emailDateStr === undefined ?
+        row.getDateFormFilled() :
+        moment(emailDateStr);
+    const daysSinceLastEmail = moment().diff(emailDate, 'days');
+    let shouldSend = daysSinceLastEmail > 31;
+    return shouldSend ? {
+            email: row.getEmail(),
+            type: reminderKey
+        } :
+        false;
+};
+
+MembershipController._buildSheetsApi = function () {
+    const auth = new google.auth.GoogleAuth({
+        keyFile: GOOGLE_CREDENTIALS_FILE_PATH,
+        scopes: GOOGLE_API_SCOPES,
+    });
+    return google.sheets({version: 'v4', auth});
 };
 
 module.exports = MembershipController;
