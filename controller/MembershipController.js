@@ -98,7 +98,19 @@ MembershipController.testSendgrid = async function (req, res) {
             email: "vincent.blouin@gmail.com"
         }
     )
-    res.send(response[0].statusCode);
+    res.sendStatus(response[0].statusCode);
+};
+
+MembershipController.testSetRedis = async function (req, res) {
+    await redisClient.set("test_poire", "test_savon")
+    res.sendStatus(200);
+};
+
+MembershipController.testGetRedis = async function (req, res) {
+    const test = await redisClient.get("test_poire");
+    res.send({
+        test: test
+    });
 };
 
 MembershipController.sendReminder = async function (row, reminderKey) {
