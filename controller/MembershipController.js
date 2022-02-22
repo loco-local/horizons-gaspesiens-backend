@@ -103,7 +103,7 @@ MembershipController.testSendgrid = async function (req, res) {
 };
 
 MembershipController.testSetRedis = async function (req, res) {
-    await redisClient.set("test_poire", "test_savon")
+    await redisClient.set("test_poire", "test_savon", {})
     res.sendStatus(200);
 };
 
