@@ -4,7 +4,8 @@ const redis = require('redis');
 const redisClient = redis.createClient({
     host: config.getConfig().redis.host,
     port: config.getConfig().redis.port,
-    password: config.getConfig().redis.password
+    password: config.getConfig().redis.password,
+    legacyMode: true
 });
 const GOOGLE_CREDENTIALS_FILE_PATH = config.getConfig().googleCredentialsFilePath;
 const GOOGLE_API_SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
