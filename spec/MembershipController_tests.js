@@ -1,7 +1,7 @@
 // const TestUtil = require("./TestUtil");
 const chai = require('chai');
 const sinon = require('sinon');
-const redis = require('redis');
+const redis = require('async-redis');
 const moment = require("moment");
 let data = {};
 let redisClient = {

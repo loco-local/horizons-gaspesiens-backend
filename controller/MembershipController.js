@@ -1,6 +1,6 @@
 const {google} = require('googleapis');
 const config = require('../config')
-const redis = require('redis');
+const redis = require('async-redis');
 const redisClient = redis.createClient({
     host: config.getConfig().redis.host,
     port: config.getConfig().redis.port,
