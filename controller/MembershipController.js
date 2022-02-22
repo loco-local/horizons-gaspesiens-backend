@@ -2,13 +2,14 @@ const {google} = require('googleapis');
 const config = require('../config')
 const redis = require('redis');
 const redisClient = redis.createClient({
-    host: '<hostname>',
-    port: '',
-    password: '<password>'
+    host: config.getConfig().redis.host,
+    port: config.getConfig().redis.port,
+    password: config.getConfig().redis.password
 });
 const GOOGLE_CREDENTIALS_FILE_PATH = config.getConfig().googleCredentialsFilePath;
 const GOOGLE_API_SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
 const moment = require("moment");
+const EmailClient = require("../EmailClient")
 const MembershipRow = require('../MembershipRow');
 const MembershipController = {};
 MembershipController.get = async function (req, res) {
@@ -86,6 +87,18 @@ MembershipController.sendReminders = async function (req, res) {
             res.sendStatus(400);
         }
     });
+};
+
+MembershipController.testSendgrid = async function (req, res) {
+    const response = await EmailClient.sendTemplateEmail(
+        "vincent.blouin@gmail.com",
+        "d-003ba183c0024264b7f2ea13616cddf5",
+        {
+            name: "Vincent",
+            email: "vincent.blouin@gmail.com"
+        }
+    )
+    res.send(response[0].statusCode);
 };
 
 MembershipController.sendReminder = async function (row, reminderKey) {

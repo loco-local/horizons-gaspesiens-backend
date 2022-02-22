@@ -11,5 +11,9 @@ router.get(
     '/membership/send_reminder',
     MembershipController.sendReminders
 )
+router.get(
+    '/membership/test_email',
+    MembershipController.testSendgrid
+)
 
 module.exports = router
