@@ -4,8 +4,7 @@ const redis = require('redis');
 const redisClient = redis.createClient({
     host: config.getConfig().redis.host,
     port: config.getConfig().redis.port,
-    password: config.getConfig().redis.password,
-    legacyMode: true
+    password: config.getConfig().redis.password
 });
 const GOOGLE_CREDENTIALS_FILE_PATH = config.getConfig().googleCredentialsFilePath;
 const GOOGLE_API_SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
@@ -103,7 +102,8 @@ MembershipController.testSendgrid = async function (req, res) {
 };
 
 MembershipController.testSetRedis = async function (req, res) {
-    await redisClient.set("test_poire", "test_savon", {})
+    await redisClient.connect();
+    await redisClient.set("test_poire", "test_savon")
     res.sendStatus(200);
 };
 
