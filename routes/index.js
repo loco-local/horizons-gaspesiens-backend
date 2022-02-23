@@ -12,14 +12,19 @@ router.get(
     MembershipController.sendReminders
 )
 
-router.get(
-    '/membership/test_set_redis',
-    MembershipController.testSetRedis
-)
+// router.get(
+//     '/membership/test_email',
+//     MembershipController.testSendgrid
+// )
 
-router.get(
-    '/membership/test_get_redis',
-    MembershipController.testGetRedis
-)
+// router.get(
+//     '/membership/test_set_redis',
+//     MembershipController.testSetRedis
+// )
+//
+// router.get(
+//     '/membership/test_get_redis',
+//     MembershipController.testGetRedis
+// )
 
 module.exports = router

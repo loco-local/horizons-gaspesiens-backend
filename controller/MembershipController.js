@@ -89,29 +89,29 @@ MembershipController.sendReminders = async function (req, res) {
     });
 };
 
-MembershipController.testSendgrid = async function (req, res) {
-    const response = await EmailClient.sendTemplateEmail(
-        "vincent.blouin@gmail.com",
-        "d-003ba183c0024264b7f2ea13616cddf5",
-        {
-            name: "Vincent",
-            email: "vincent.blouin@gmail.com"
-        }
-    )
-    res.sendStatus(response[0].statusCode);
-};
+// MembershipController.testSendgrid = async function (req, res) {
+//     const response = await EmailClient.sendTemplateEmail(
+//         "vincent.blouin@gmail.com",
+//         "d-003ba183c0024264b7f2ea13616cddf5",
+//         {
+//             name: "Vincent",
+//             email: "vincent.blouin@gmail.com"
+//         }
+//     )
+//     res.sendStatus(response[0].statusCode);
+// };
 
-MembershipController.testSetRedis = async function (req, res) {
-    await redisClient.set("test_poire", "test_savon")
-    res.sendStatus(200);
-};
-
-MembershipController.testGetRedis = async function (req, res) {
-    const test = await redisClient.get("test_poire");
-    res.send({
-        test: test
-    });
-};
+// MembershipController.testSetRedis = async function (req, res) {
+//     await redisClient.set("test_poire", "test_savon")
+//     res.sendStatus(200);
+// };
+//
+// MembershipController.testGetRedis = async function (req, res) {
+//     const test = await redisClient.get("test_poire");
+//     res.send({
+//         test: test
+//     });
+// };
 
 MembershipController.sendReminder = async function (row, reminderKey) {
     if (row.doesNotWantToBeMember()) {
