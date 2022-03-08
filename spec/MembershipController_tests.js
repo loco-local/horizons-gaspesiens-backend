@@ -38,11 +38,17 @@ describe('MembershipControllerTest', () => {
     });
 
     it("sends never paid email again if sent more that a month ago", async () => {
-        data['vincent.blouin@gmail.com' + '_never_paid_email'] = moment().subtract('33', 'days').toDate().getTime();
+        const nbDaysNotSoLongAgo = 10;
+        data['vincent.blouin@gmail.com' + '_never_paid_email'] = moment().subtract(nbDaysNotSoLongAgo, 'days').toDate().getTime();
         let res = await chai.request(app)
             .get('/api/membership/send_reminder')
-        console.log(res.body);
-        const emails = getEmailsOfType(res.body, 'never_paid_email');
+        let emails = getEmailsOfType(res.body, 'never_paid_email');
+        emails.length.should.equal(2);
+        const nbDaysAWhileBack = 35;
+        data['vincent.blouin@gmail.com' + '_never_paid_email'] = moment().subtract(nbDaysAWhileBack, 'days').toDate().getTime();
+        res = await chai.request(app)
+            .get('/api/membership/send_reminder')
+        emails = getEmailsOfType(res.body, 'never_paid_email');
         emails.length.should.equal(3);
     });
 

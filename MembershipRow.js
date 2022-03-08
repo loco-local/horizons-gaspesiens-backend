@@ -1,9 +1,12 @@
 const moment = require("moment");
-
+require('moment/locale/fr');
+moment.locale('fr')
 const HORODATEUR_ROW_INDEX = 0;
+const FIRST_NAME_INDEX = 1;
 const EMAIL_ROW_INDEX = 4;
 const SUBSCRIPTION_RENEWAL_DATE_INDEX = 17;
 const DOES_NOT_WANT_MEMBERSHIP_INDEX = 19;
+
 
 function MembershipRow(row) {
     this.row = row;
@@ -37,8 +40,19 @@ MembershipRow.prototype.getDateFormFilled = function () {
     );
 };
 
+MembershipRow.prototype.getDateFormFilledFormatted = function () {
+    return moment(
+        this.row[HORODATEUR_ROW_INDEX].substr(0, 10),
+        'DD/MM/YYYY'
+    ).format('LL')
+};
+
 MembershipRow.prototype.doesNotWantToBeMember = function () {
     return this.row[DOES_NOT_WANT_MEMBERSHIP_INDEX] === 'oui';
 };
+
+MembershipRow.prototype.getFirstname = function () {
+    return this.row[FIRST_NAME_INDEX];
+}
 
 module.exports = MembershipRow;

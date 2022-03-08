@@ -9,9 +9,21 @@ const redisClient = redis.createClient({
 const GOOGLE_CREDENTIALS_FILE_PATH = config.getConfig().googleCredentialsFilePath;
 const GOOGLE_API_SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
 const moment = require("moment");
+require('moment/locale/fr');
+moment.locale('fr');
 const EmailClient = require("../EmailClient")
 const MembershipRow = require('../MembershipRow');
 const MembershipController = {};
+const daysBetweenEmails = 34;
+const inactiveRenewEmail = "inactive_renew_email";
+const welcomeEmail = "welcome_email";
+const neverPaidEmail = "never_paid_email";
+const templatesId = {};
+templatesId[welcomeEmail] = "d-003ba183c0024264b7f2ea13616cddf5"
+templatesId[neverPaidEmail] = "d-0f38412cd6b24aada90588b90747986d"
+templatesId[inactiveRenewEmail] = "";
+
+
 MembershipController.get = async function (req, res) {
     const {email} = req.body
     let emailToFind = email;
@@ -63,15 +75,22 @@ MembershipController.sendReminders = async function (req, res) {
                 status = row.getStatus();
                 if (status.status === 'inactive') {
                     let reminder;
+                    const data = {
+                        email: row.getEmail(),
+                        firstname: row.getFirstname()
+                    }
                     if (status.reason === 'no renewal date') {
-                        reminder = await MembershipController.sendReminder(
+                        data.formDate = row.getDateFormFilledFormatted();
+                        reminder = await MembershipController.buildReminder(
                             row,
-                            "never_paid_email"
+                            neverPaidEmail,
+                            data
                         );
                     } else {
-                        reminder = await MembershipController.sendReminder(
+                        reminder = await MembershipController.buildReminder(
                             row,
-                            "inactive_renew_email"
+                            inactiveRenewEmail,
+                            data
                         );
                     }
                     if (reminder !== false) {
@@ -81,6 +100,7 @@ MembershipController.sendReminders = async function (req, res) {
 
                 }
             }));
+            MembershipController._sendEmails(remindersSent);
             res.send(remindersSent);
         } else {
             console.log('No data found.');
@@ -92,7 +112,7 @@ MembershipController.sendReminders = async function (req, res) {
 // MembershipController.testSendgrid = async function (req, res) {
 //     const response = await EmailClient.sendTemplateEmail(
 //         "vincent.blouin@gmail.com",
-//         "d-003ba183c0024264b7f2ea13616cddf5",
+//         templatesId['inactive_renew_email'],
 //         {
 //             name: "Vincent",
 //             email: "vincent.blouin@gmail.com"
@@ -113,7 +133,7 @@ MembershipController.sendReminders = async function (req, res) {
 //     });
 // };
 
-MembershipController.sendReminder = async function (row, reminderKey) {
+MembershipController.buildReminder = async function (row, reminderKey, data) {
     if (row.doesNotWantToBeMember()) {
         // console.log(row.getEmail())
         return false;
@@ -124,10 +144,11 @@ MembershipController.sendReminder = async function (row, reminderKey) {
         row.getDateFormFilled() :
         moment(emailDateStr);
     const daysSinceLastEmail = moment().diff(emailDate, 'days');
-    let shouldSend = daysSinceLastEmail > 31;
+    let shouldSend = daysSinceLastEmail > daysBetweenEmails;
     return shouldSend ? {
             email: row.getEmail(),
-            type: reminderKey
+            type: reminderKey,
+            data: data
         } :
         false;
 };
@@ -139,5 +160,15 @@ MembershipController._buildSheetsApi = function () {
     });
     return google.sheets({version: 'v4', auth});
 };
+
+MembershipController._sendEmails = function (emails) {
+    emails.forEach((email) => {
+        EmailClient.sendTemplateEmail(
+            email.email,
+            templatesId[email.type],
+            email.data
+        )
+    });
+}
 
 module.exports = MembershipController;
