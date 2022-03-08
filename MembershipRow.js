@@ -56,6 +56,14 @@ MembershipRow.prototype.getRenewalDateFormatted = function () {
     return this.getRenewalDate().format('LL');
 };
 
+MembershipRow.prototype.getExpirationDate = function () {
+    return this.getRenewalDate().add(1, 'years').add(1, 'days');
+};
+
+MembershipRow.prototype.getExpirationDateFormatted = function () {
+    return this.getExpirationDate().format('LL');
+};
+
 
 MembershipRow.prototype.doesNotWantToBeMember = function () {
     return this.row[DOES_NOT_WANT_MEMBERSHIP_INDEX] === 'oui';

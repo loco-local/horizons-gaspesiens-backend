@@ -24,7 +24,7 @@ const neverPaidEmail = "never_paid_email";
 const templatesId = {};
 templatesId[welcomeEmail] = "d-003ba183c0024264b7f2ea13616cddf5"
 templatesId[neverPaidEmail] = "d-0f38412cd6b24aada90588b90747986d"
-templatesId[inactiveRenewEmail] = "";
+templatesId[inactiveRenewEmail] = "d-6cca9a5b35314bf9b1d25bafcdd17f37";
 
 
 MembershipController.get = async function (req, res) {
@@ -86,19 +86,27 @@ MembershipController.sendReminders = async function (req, res) {
                     //     return
                     // }
                     if (status.reason === 'no renewal date') {
-                        data.formDate = row.getDateFormFilledFormatted();
-                        reminder = await MembershipController.buildReminder(
-                            row,
-                            neverPaidEmail,
-                            data
-                        );
+                        let formFillDate = row.getDateFormFilled();
+                        const daysSinceFormFill = Now.get().diff(formFillDate, 'days');
+                        if (daysSinceFormFill > nbDaysBufferToRegisterPayment) {
+                            data.formDate = row.getDateFormFilledFormatted();
+                            reminder = await MembershipController.buildReminder(
+                                row,
+                                neverPaidEmail,
+                                data
+                            );
+                        }
                     } else {
-                        data.renewDate = row.getRenewalDateFormatted();
-                        reminder = await MembershipController.buildReminder(
-                            row,
-                            inactiveRenewEmail,
-                            data
-                        );
+                        let expiredDate = row.getExpirationDate();
+                        const daysSinceExpired = Now.get().diff(expiredDate, 'days');
+                        if (daysSinceExpired > nbDaysBufferToRegisterPayment) {
+                            data.expiredDate = row.getExpirationDateFormatted();
+                            reminder = await MembershipController.buildReminder(
+                                row,
+                                inactiveRenewEmail,
+                                data
+                            );
+                        }
                     }
                 } else {
                     const daysSinceMembership = Now.get().diff(row.getRenewalDate(), 'days');
@@ -168,9 +176,7 @@ MembershipController.buildReminder = async function (row, reminderKey, data, sen
             const daysSinceLastEmail = Now.get().diff(emailDate, 'days');
             shouldSend = daysSinceLastEmail > daysBetweenEmails;
         } else {
-            let formFillDate = row.getDateFormFilled();
-            const daysSinceFormFill = Now.get().diff(formFillDate, 'days');
-            shouldSend = daysSinceFormFill > nbDaysBufferToRegisterPayment;
+            shouldSend = true;
         }
     }
     if (shouldSend) {
