@@ -41,11 +41,20 @@ MembershipRow.prototype.getDateFormFilled = function () {
 };
 
 MembershipRow.prototype.getDateFormFilledFormatted = function () {
-    return moment(
-        this.row[HORODATEUR_ROW_INDEX].substr(0, 10),
-        'DD/MM/YYYY'
-    ).format('LL')
+    return this.getDateFormFilled().format('LL')
 };
+
+MembershipRow.prototype.getRenewalDate = function () {
+    return moment(
+        this.row[SUBSCRIPTION_RENEWAL_DATE_INDEX],
+        'DD/MM/YYYY'
+    );
+};
+
+MembershipRow.prototype.getRenewalDateFormatted = function () {
+    return this.getRenewalDate().format('LL');
+};
+
 
 MembershipRow.prototype.doesNotWantToBeMember = function () {
     return this.row[DOES_NOT_WANT_MEMBERSHIP_INDEX] === 'oui';

@@ -45,12 +45,32 @@ describe('MembershipControllerTest', () => {
         let emails = getEmailsOfType(res.body, 'never_paid_email');
         emails.length.should.equal(2);
         const nbDaysAWhileBack = 35;
+        data = {};
         data['vincent.blouin@gmail.com' + '_never_paid_email'] = moment().subtract(nbDaysAWhileBack, 'days').toDate().getTime();
         res = await chai.request(app)
             .get('/api/membership/send_reminder')
         emails = getEmailsOfType(res.body, 'never_paid_email');
         emails.length.should.equal(3);
     });
+
+    it("sends welcome email for subscription in last 60 days", async () => {
+        let res = await chai.request(app)
+            .get('/api/membership/send_reminder')
+        let emails = getEmailsOfType(res.body, 'welcome_email');
+        emails.length.should.equal(3);
+    });
+
+    it("only sends welcome email once", async () => {
+        let res = await chai.request(app)
+            .get('/api/membership/send_reminder')
+        let emails = getEmailsOfType(res.body, 'welcome_email');
+        emails.length.should.equal(3);
+        res = await chai.request(app)
+            .get('/api/membership/send_reminder')
+        emails = getEmailsOfType(res.body, 'welcome_email');
+        emails.length.should.equal(0);
+    });
+
 
     function getEmailsOfType(emails, type) {
         return emails.filter((email) => {

@@ -15,6 +15,7 @@ const EmailClient = require("../EmailClient")
 const MembershipRow = require('../MembershipRow');
 const MembershipController = {};
 const daysBetweenEmails = 34;
+const welcomeEmailSinceMaxDays = 60;
 const inactiveRenewEmail = "inactive_renew_email";
 const welcomeEmail = "welcome_email";
 const neverPaidEmail = "never_paid_email";
@@ -73,12 +74,12 @@ MembershipController.sendReminders = async function (req, res) {
             await Promise.all(rows.map(async (row) => {
                 row = new MembershipRow(row);
                 status = row.getStatus();
+                let reminder;
+                const data = {
+                    email: row.getEmail(),
+                    firstname: row.getFirstname()
+                }
                 if (status.status === 'inactive') {
-                    let reminder;
-                    const data = {
-                        email: row.getEmail(),
-                        firstname: row.getFirstname()
-                    }
                     if (status.reason === 'no renewal date') {
                         data.formDate = row.getDateFormFilledFormatted();
                         reminder = await MembershipController.buildReminder(
@@ -93,11 +94,21 @@ MembershipController.sendReminders = async function (req, res) {
                             data
                         );
                     }
-                    if (reminder !== false) {
-                        remindersSent.push(reminder);
-                    }
                 } else {
-
+                    const daysSinceMembership = moment().diff(row.getRenewalDate(), 'days');
+                    const daysSinceFormFill = moment().diff(row.getDateFormFilledFormatted(), 'days');
+                    if (daysSinceFormFill <= welcomeEmailSinceMaxDays && daysSinceMembership <= welcomeEmailSinceMaxDays) {
+                        data.memberSince = row.getRenewalDateFormatted();
+                        reminder = await MembershipController.buildReminder(
+                            row,
+                            welcomeEmail,
+                            data,
+                            true
+                        );
+                    }
+                }
+                if (reminder !== false && reminder !== undefined) {
+                    remindersSent.push(reminder);
                 }
             }));
             MembershipController._sendEmails(remindersSent);
@@ -133,24 +144,35 @@ MembershipController.sendReminders = async function (req, res) {
 //     });
 // };
 
-MembershipController.buildReminder = async function (row, reminderKey, data) {
+MembershipController.buildReminder = async function (row, reminderKey, data, sendOnlyOnce) {
+    sendOnlyOnce = sendOnlyOnce | false;
     if (row.doesNotWantToBeMember()) {
         // console.log(row.getEmail())
         return false;
     }
     const key = row.getEmail() + '_' + reminderKey;
     let emailDateStr = await redisClient.get(key);
-    const emailDate = emailDateStr === undefined ?
-        row.getDateFormFilled() :
-        moment(emailDateStr);
-    const daysSinceLastEmail = moment().diff(emailDate, 'days');
-    let shouldSend = daysSinceLastEmail > daysBetweenEmails;
-    return shouldSend ? {
+    const emailSentInThePast = emailDateStr !== undefined;
+    let shouldSend;
+    if (sendOnlyOnce) {
+        shouldSend = !emailSentInThePast;
+    } else {
+        const emailDate = emailSentInThePast ?
+            moment(emailDateStr) :
+            row.getDateFormFilled();
+        const daysSinceLastEmail = moment().diff(emailDate, 'days');
+        shouldSend = daysSinceLastEmail > daysBetweenEmails;
+    }
+    if (shouldSend) {
+        await redisClient.set(key, new Date().getTime())
+        return {
             email: row.getEmail(),
             type: reminderKey,
             data: data
-        } :
-        false;
+        }
+    } else {
+        return false;
+    }
 };
 
 MembershipController._buildSheetsApi = function () {
