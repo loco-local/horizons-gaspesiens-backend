@@ -34,15 +34,20 @@ describe('MembershipControllerTest', () => {
         let res = await chai.request(app)
             .get('/api/membership/send_reminder')
         const emails = getEmailsOfType(res.body, 'never_paid_email');
-        emails.length.should.equal(3);
+        emails.length.should.equal(5);
     });
 
     it("avoid to sends never paid email if sent recently", async () => {
-        data['vincent.blouin@gmail.com' + '_never_paid_email'] = Now.get().toDate().getTime();
         let res = await chai.request(app)
             .get('/api/membership/send_reminder')
-        const emails = getEmailsOfType(res.body, 'never_paid_email');
-        emails.length.should.equal(2);
+        let emails = getEmailsOfType(res.body, 'never_paid_email');
+        emails.length.should.equal(5);
+        data = {};
+        data['vincent.blouin@gmail.com' + '_never_paid_email'] = Now.get().toDate().getTime();
+        res = await chai.request(app)
+            .get('/api/membership/send_reminder')
+        emails = getEmailsOfType(res.body, 'never_paid_email');
+        emails.length.should.equal(4);
     });
 
     it("sends never paid email again if sent more that a month ago", async () => {
@@ -51,14 +56,14 @@ describe('MembershipControllerTest', () => {
         let res = await chai.request(app)
             .get('/api/membership/send_reminder')
         let emails = getEmailsOfType(res.body, 'never_paid_email');
-        emails.length.should.equal(2);
+        emails.length.should.equal(4);
         const nbDaysAWhileBack = 35;
         data = {};
         data['vincent.blouin@gmail.com' + '_never_paid_email'] = Now.get().subtract(nbDaysAWhileBack, 'days').toDate().getTime();
         res = await chai.request(app)
             .get('/api/membership/send_reminder')
         emails = getEmailsOfType(res.body, 'never_paid_email');
-        emails.length.should.equal(3);
+        emails.length.should.equal(5);
     });
 
     it("sends welcome email for subscription in last 60 days", async () => {

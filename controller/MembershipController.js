@@ -163,14 +163,18 @@ MembershipController.buildReminder = async function (row, reminderKey, data, sen
     if (sendOnlyOnce) {
         shouldSend = !emailSentInThePast;
     } else {
-        const emailDate = emailSentInThePast ?
-            moment(emailDateStr) :
-            row.getDateFormFilled();
-        const daysSinceLastEmail = Now.get().diff(emailDate, 'days');
-        shouldSend = daysSinceLastEmail > daysBetweenEmails;
+        if (emailSentInThePast) {
+            let emailDate = moment(emailDateStr);
+            const daysSinceLastEmail = Now.get().diff(emailDate, 'days');
+            shouldSend = daysSinceLastEmail > daysBetweenEmails;
+        } else {
+            let formFillDate = row.getDateFormFilled();
+            const daysSinceFormFill = Now.get().diff(formFillDate, 'days');
+            shouldSend = daysSinceFormFill > nbDaysBufferToRegisterPayment;
+        }
     }
     if (shouldSend) {
-        await redisClient.set(key, new Date().getTime())
+        await redisClient.set(key, Now.get().toDate().getTime())
         return {
             email: row.getEmail(),
             type: reminderKey,
