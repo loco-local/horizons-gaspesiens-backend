@@ -13,9 +13,11 @@ require('moment/locale/fr');
 moment.locale('fr');
 const EmailClient = require("../EmailClient")
 const MembershipRow = require('../MembershipRow');
+const Now = require("../Now");
 const MembershipController = {};
 const daysBetweenEmails = 34;
 const welcomeEmailSinceMaxDays = 60;
+const nbDaysBufferToRegisterPayment = 15;
 const inactiveRenewEmail = "inactive_renew_email";
 const welcomeEmail = "welcome_email";
 const neverPaidEmail = "never_paid_email";
@@ -80,6 +82,9 @@ MembershipController.sendReminders = async function (req, res) {
                     firstname: row.getFirstname()
                 }
                 if (status.status === 'inactive') {
+                    // if (nbDaysBufferToRegisterPayment) {
+                    //     return
+                    // }
                     if (status.reason === 'no renewal date') {
                         data.formDate = row.getDateFormFilledFormatted();
                         reminder = await MembershipController.buildReminder(
@@ -88,6 +93,7 @@ MembershipController.sendReminders = async function (req, res) {
                             data
                         );
                     } else {
+                        data.renewDate = row.getRenewalDateFormatted();
                         reminder = await MembershipController.buildReminder(
                             row,
                             inactiveRenewEmail,
@@ -95,8 +101,8 @@ MembershipController.sendReminders = async function (req, res) {
                         );
                     }
                 } else {
-                    const daysSinceMembership = moment().diff(row.getRenewalDate(), 'days');
-                    const daysSinceFormFill = moment().diff(row.getDateFormFilledFormatted(), 'days');
+                    const daysSinceMembership = Now.get().diff(row.getRenewalDate(), 'days');
+                    const daysSinceFormFill = Now.get().diff(row.getDateFormFilledFormatted(), 'days');
                     if (daysSinceFormFill <= welcomeEmailSinceMaxDays && daysSinceMembership <= welcomeEmailSinceMaxDays) {
                         data.memberSince = row.getRenewalDateFormatted();
                         reminder = await MembershipController.buildReminder(
@@ -160,7 +166,7 @@ MembershipController.buildReminder = async function (row, reminderKey, data, sen
         const emailDate = emailSentInThePast ?
             moment(emailDateStr) :
             row.getDateFormFilled();
-        const daysSinceLastEmail = moment().diff(emailDate, 'days');
+        const daysSinceLastEmail = Now.get().diff(emailDate, 'days');
         shouldSend = daysSinceLastEmail > daysBetweenEmails;
     }
     if (shouldSend) {

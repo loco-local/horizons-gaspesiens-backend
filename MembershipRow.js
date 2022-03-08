@@ -1,3 +1,4 @@
+const Now = require("./Now");
 const moment = require("moment");
 require('moment/locale/fr');
 moment.locale('fr')
@@ -26,7 +27,7 @@ MembershipRow.prototype.getStatus = function () {
         };
     }
     renewalDate = moment(renewalDate, "DD/MM/YYYY").add(1, 'Y').toDate()
-    const isActive = new Date() < renewalDate;
+    const isActive = Now.get().toDate() < renewalDate;
     return {
         status: isActive ? "active" : "inactive",
         subscriptionRenewalDate: renewalDate.toString()
