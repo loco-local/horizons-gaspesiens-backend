@@ -70,14 +70,14 @@ describe('MembershipControllerTest', () => {
         let res = await chai.request(app)
             .get('/api/membership/send_reminder')
         let emails = getEmailsOfType(res.body, 'welcome_email');
-        emails.length.should.equal(3);
+        emails.length.should.equal(5);
     });
 
     it("only sends welcome email once", async () => {
         let res = await chai.request(app)
             .get('/api/membership/send_reminder')
         let emails = getEmailsOfType(res.body, 'welcome_email');
-        emails.length.should.equal(3);
+        emails.length.should.equal(5);
         res = await chai.request(app)
             .get('/api/membership/send_reminder')
         emails = getEmailsOfType(res.body, 'welcome_email');
@@ -96,6 +96,17 @@ describe('MembershipControllerTest', () => {
         emails.length.should.equal(0);
     });
 
+
+    it("sends thank you for renewal email", async () => {
+        let res = await chai.request(app)
+            .get('/api/membership/send_reminder')
+        let emails = getEmailsOfType(res.body, 'thank_you_renew_email');
+        emails.length.should.equal(1);
+        res = await chai.request(app)
+            .get('/api/membership/send_reminder')
+        emails = getEmailsOfType(res.body, 'thank_you_renew_email');
+        emails.length.should.equal(0);
+    });
 
     function getEmailsOfType(emails, type) {
         return emails.filter((email) => {

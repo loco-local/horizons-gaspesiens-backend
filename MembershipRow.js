@@ -5,6 +5,7 @@ moment.locale('fr')
 const HORODATEUR_ROW_INDEX = 0;
 const FIRST_NAME_INDEX = 1;
 const EMAIL_ROW_INDEX = 4;
+const PAYMENT_DATE_INDEX = 16;
 const SUBSCRIPTION_RENEWAL_DATE_INDEX = 17;
 const DOES_NOT_WANT_MEMBERSHIP_INDEX = 19;
 
@@ -55,6 +56,14 @@ MembershipRow.prototype.getRenewalDate = function () {
 MembershipRow.prototype.getRenewalDateFormatted = function () {
     return this.getRenewalDate().format('LL');
 };
+
+MembershipRow.prototype.getPaymentDate = function () {
+    return moment(
+        this.row[PAYMENT_DATE_INDEX],
+        'DD/MM/YYYY'
+    );
+};
+
 
 MembershipRow.prototype.getExpirationDate = function () {
     return this.getRenewalDate().add(1, 'years').add(1, 'days');
