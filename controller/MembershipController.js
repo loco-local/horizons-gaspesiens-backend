@@ -88,12 +88,15 @@ MembershipController.sendReminders = async function (req, res) {
                     email: row.getEmail(),
                     firstname: row.getFirstname()
                 }
+                console.log(row.getEmail());
                 let formFillDate = row.getDateFormFilled();
                 const daysSinceFormFill = Now.get().diff(formFillDate, 'days');
+                console.log("daysSinceFormFill" + " " + daysSinceFormFill);
                 if (status.status === 'inactive') {
                     // if (nbDaysBufferToRegisterPayment) {
                     //     return
                     // }
+                    console.log("status inactive");
                     if (status.reason === 'no renewal date') {
                         if (daysSinceFormFill > nbDaysBufferToRegisterPayment) {
                             data.formDate = row.getDateFormFilledFormatted();
@@ -116,7 +119,9 @@ MembershipController.sendReminders = async function (req, res) {
                         }
                     }
                 } else {
+                    console.log("status active");
                     const daysSinceMembership = Now.get().diff(row.getRenewalDate(), 'days');
+                    console.log("daysSinceMembership" + " " + daysSinceMembership);
                     if (daysSinceFormFill <= welcomeEmailSinceMaxDays && daysSinceMembership <= welcomeEmailSinceMaxDays) {
                         data.memberSince = row.getRenewalDateFormatted();
                         reminder = await MembershipController.buildReminder(
@@ -191,6 +196,7 @@ MembershipController.buildReminder = async function (row, reminderKey, data, sen
     }
     const key = row.getEmail() + '_' + reminderKey;
     let emailDateStr = await redisClient.get(key);
+    console.log("emailDateStr " + emailDateStr);
     const emailSentInThePast = emailDateStr !== undefined;
     let shouldSend;
     if (sendOnlyOnce) {
