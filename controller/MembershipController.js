@@ -149,8 +149,8 @@ MembershipController.sendReminders = async function (req, res) {
                     remindersSent.push(reminder);
                 }
             }));
-            MembershipController._sendEmails(remindersSent);
-            console.log("finished sending reminders ");
+            await MembershipController._sendEmails(remindersSent);
+            console.log("finished sending nb reminders " + remindersSent.length);
             res.send(remindersSent);
         } else {
             console.log('No data found.');
@@ -225,13 +225,13 @@ MembershipController._buildSheetsApi = function () {
 };
 
 MembershipController._sendEmails = function (emails) {
-    emails.forEach((email) => {
-        EmailClient.sendTemplateEmail(
+    return Promise.all(emails.map(async (email) => {
+        await EmailClient.sendTemplateEmail(
             email.email,
             templatesId[email.type],
             email.data
         )
-    });
+    }));
 }
 
 module.exports = MembershipController;
