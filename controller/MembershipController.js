@@ -211,13 +211,16 @@ MembershipController.buildReminder = async function (row, reminderKey, data, sen
         }
     }
     if (shouldSend) {
-        await redisClient.set(key, Now.get().toDate().getTime())
+        console.log("should send " + row.getEmail());
+        await redisClient.set(key, Now.get().toDate().getTime());
+        console.log("redis set key " + key);
         return {
             email: row.getEmail(),
             type: reminderKey,
             data: data
         }
     } else {
+        console.log("should not send " + row.getEmail());
         return false;
     }
 };
