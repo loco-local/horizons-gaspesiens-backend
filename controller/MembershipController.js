@@ -197,7 +197,7 @@ MembershipController.buildReminder = async function (row, reminderKey, data, sen
     const key = row.getEmail() + '_' + reminderKey;
     let emailDateStr = await redisClient.get(key);
     console.log("emailDateStr " + emailDateStr);
-    const emailSentInThePast = emailDateStr !== undefined;
+    const emailSentInThePast = emailDateStr !== undefined && emailDateStr !== null;
     let shouldSend;
     if (sendOnlyOnce) {
         shouldSend = !emailSentInThePast;
