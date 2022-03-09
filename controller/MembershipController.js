@@ -69,6 +69,7 @@ MembershipController.get = async function (req, res) {
 };
 
 MembershipController.sendReminders = async function (req, res) {
+    console.log("sending reminders ");
     const sheets = MembershipController._buildSheetsApi();
     const remindersSent = [];
     sheets.spreadsheets.values.get({
@@ -149,6 +150,7 @@ MembershipController.sendReminders = async function (req, res) {
                 }
             }));
             MembershipController._sendEmails(remindersSent);
+            console.log("finished sending reminders ");
             res.send(remindersSent);
         } else {
             console.log('No data found.');
