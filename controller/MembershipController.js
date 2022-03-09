@@ -69,7 +69,7 @@ MembershipController.get = async function (req, res) {
 };
 
 MembershipController.sendReminders = async function (req, res) {
-    console.log("sending reminders ");
+    console.log("sending reminders " + Now.get().format());
     const sheets = MembershipController._buildSheetsApi();
     const remindersSent = [];
     sheets.spreadsheets.values.get({
@@ -88,7 +88,6 @@ MembershipController.sendReminders = async function (req, res) {
                     email: row.getEmail(),
                     firstname: row.getFirstname()
                 }
-                console.log(row.getEmail());
                 let formFillDate = row.getDateFormFilled();
                 const daysSinceFormFill = Now.get().diff(formFillDate, 'days');
                 if (status.status === 'inactive') {
@@ -151,7 +150,7 @@ MembershipController.sendReminders = async function (req, res) {
                 }
             }));
             await MembershipController._sendEmails(remindersSent);
-            console.log("finished sending nb reminders " + remindersSent.length);
+            console.log("finished sending nb reminders " + remindersSent.length + " " + Now.get().format());
             res.send(remindersSent);
         } else {
             console.log('No data found.');
