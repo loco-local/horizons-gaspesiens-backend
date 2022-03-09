@@ -88,6 +88,7 @@ MembershipController.sendReminders = async function (req, res) {
                     email: row.getEmail(),
                     firstname: row.getFirstname()
                 }
+                console.log(row.getEmail());
                 let formFillDate = row.getDateFormFilled();
                 const daysSinceFormFill = Now.get().diff(formFillDate, 'days');
                 if (status.status === 'inactive') {
