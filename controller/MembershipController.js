@@ -18,13 +18,16 @@ const MembershipController = {};
 const daysBetweenEmails = 34;
 const welcomeEmailSinceMaxDays = 60;
 const nbDaysBufferToRegisterPayment = 15;
+const nbDaysBeforeExpirationForReminder = 15;
 const inactiveRenewEmail = "inactive_renew_email";
 const welcomeEmail = "welcome_email";
 const neverPaidEmail = "never_paid_email";
+const expiresSoonEmail = "expires_soon_email";
 const templatesId = {};
 templatesId[welcomeEmail] = "d-003ba183c0024264b7f2ea13616cddf5"
 templatesId[neverPaidEmail] = "d-0f38412cd6b24aada90588b90747986d"
 templatesId[inactiveRenewEmail] = "d-6cca9a5b35314bf9b1d25bafcdd17f37";
+templatesId[expiresSoonEmail] = "d-e1e81b8e88c64e189dc096b6fd3833cb";
 
 
 MembershipController.get = async function (req, res) {
@@ -118,6 +121,18 @@ MembershipController.sendReminders = async function (req, res) {
                             welcomeEmail,
                             data,
                             true
+                        );
+                    }
+                    const daysBeforeExpiration = Now.get().diff(row.getExpirationDate(), 'days');
+                    if(data.email === "florence.hlescouflair@gmail.com"){
+                        console.log("florence " + daysBeforeExpiration + " " + row.getExpirationDateFormatted())
+                    }
+                    if (daysBeforeExpiration < 0 && Math.abs(daysBeforeExpiration) < nbDaysBeforeExpirationForReminder) {
+                        data.expirationInDays = Math.abs(daysBeforeExpiration);
+                        reminder = await MembershipController.buildReminder(
+                            row,
+                            expiresSoonEmail,
+                            data
                         );
                     }
                 }

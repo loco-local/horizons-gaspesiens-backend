@@ -84,6 +84,18 @@ describe('MembershipControllerTest', () => {
         emails.length.should.equal(0);
     });
 
+    it("sends email when expiration is soon", async () => {
+        let res = await chai.request(app)
+            .get('/api/membership/send_reminder')
+        let emails = getEmailsOfType(res.body, 'expires_soon_email');
+        emails.length.should.equal(1);
+        emails[0].data.expirationInDays.should.equal(8);
+        res = await chai.request(app)
+            .get('/api/membership/send_reminder')
+        emails = getEmailsOfType(res.body, 'expires_soon_email');
+        emails.length.should.equal(0);
+    });
+
 
     function getEmailsOfType(emails, type) {
         return emails.filter((email) => {
