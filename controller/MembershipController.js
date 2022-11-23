@@ -31,6 +31,7 @@ templatesId[neverPaidEmail] = "d-0f38412cd6b24aada90588b90747986d"
 templatesId[inactiveRenewEmail] = "d-6cca9a5b35314bf9b1d25bafcdd17f37";
 templatesId[expiresSoonEmail] = "d-e1e81b8e88c64e189dc096b6fd3833cb";
 templatesId[thankYouRenewEmail] = "d-90629f28f34846fcb5f64046fa6568ec";
+const cellsRange = 'A2:U';
 
 
 MembershipController.get = async function (req, res) {
@@ -40,7 +41,7 @@ MembershipController.get = async function (req, res) {
     const sheets = MembershipController._buildSheetsApi();
     sheets.spreadsheets.values.get({
         spreadsheetId: config.getConfig().spreadSheetId,
-        range: 'A2:T',
+        range: cellsRange,
     }, (err, sheetsRes) => {
         if (err) return console.log('The API returned an error: ' + err);
         const rows = sheetsRes.data.values;
@@ -74,7 +75,7 @@ MembershipController.sendReminders = async function (req, res) {
     const remindersSent = [];
     sheets.spreadsheets.values.get({
         spreadsheetId: config.getConfig().spreadSheetId,
-        range: 'A2:T',
+        range: cellsRange,
     }, async (err, sheetsRes) => {
         if (err) return console.log('The API returned an error: ' + err);
         const rows = sheetsRes.data.values;
@@ -83,6 +84,11 @@ MembershipController.sendReminders = async function (req, res) {
             await Promise.all(rows.map(async (row) => {
                 row = new MembershipRow(row);
                 status = row.getStatus();
+                if (row.getEmail() === "yzandre@yahoo.com") {
+                    console.log("YAAAAAAAAA")
+                    console.log(status.status)
+                    console.log(status.reason)
+                }
                 let reminder;
                 const data = {
                     email: row.getEmail(),
@@ -232,6 +238,10 @@ MembershipController._sendEmails = function (emails) {
             email.data
         )
     }));
+}
+
+MembershipController._getCellsRange = function () {
+    return cellsRange;
 }
 
 module.exports = MembershipController;

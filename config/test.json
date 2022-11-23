@@ -1,7 +1,7 @@
 {
   "useMinify": false,
   "googleCredentialsFilePath": "/home/chenzo/Documents/Site web loco local/membres-google-credentials-local.json",
-  "spreadSheetId": "1m6gKaCgdNRBS3jw1xWzAcwiAL7SLQ2ptsyYOb9AjmCA",
+  "spreadSheetId": "163GJaCz2urQ9PaRtXNxp-FUkQ02gU9O94TEj80-gFHk",
   "sendgrid": "mock",
   "redis": {
     "host": "",

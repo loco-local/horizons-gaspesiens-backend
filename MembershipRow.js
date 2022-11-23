@@ -5,9 +5,9 @@ moment.locale('fr')
 const HORODATEUR_ROW_INDEX = 0;
 const FIRST_NAME_INDEX = 1;
 const EMAIL_ROW_INDEX = 4;
-const PAYMENT_DATE_INDEX = 16;
-const SUBSCRIPTION_RENEWAL_DATE_INDEX = 17;
-const DOES_NOT_WANT_MEMBERSHIP_INDEX = 19;
+const PAYMENT_DATE_INDEX = 17;
+const SUBSCRIPTION_RENEWAL_DATE_INDEX = 18;
+const DOES_NOT_WANT_MEMBERSHIP_INDEX = 20;
 
 
 function MembershipRow(row) {
@@ -75,8 +75,12 @@ MembershipRow.prototype.getExpirationDateFormatted = function () {
 
 
 MembershipRow.prototype.doesNotWantToBeMember = function () {
-    return this.row[DOES_NOT_WANT_MEMBERSHIP_INDEX] === 'oui';
+    return this._getDoesNotWantToBeMemberValue() === 'oui';
 };
+
+MembershipRow.prototype._getDoesNotWantToBeMemberValue = function () {
+    return this.row[DOES_NOT_WANT_MEMBERSHIP_INDEX];
+}
 
 MembershipRow.prototype.getFirstname = function () {
     return this.row[FIRST_NAME_INDEX];
