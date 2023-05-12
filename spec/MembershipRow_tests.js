@@ -19,7 +19,7 @@ describe('MembershipRow', () => {
         const sheets = MembershipController._buildSheetsApi();
         return new Promise((resolve) => {
             sheets.spreadsheets.values.get({
-                spreadsheetId: config.getConfig().spreadSheetId,
+                spreadsheetId: config.get().spreadSheetId,
                 range: MembershipController._getCellsRange(),
             }, (err, sheetsRes) => {
                 if (err) return console.log('The API returned an error: ' + err);

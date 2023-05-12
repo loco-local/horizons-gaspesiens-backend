@@ -2,11 +2,11 @@ const {google} = require('googleapis');
 const config = require('../config')
 const redis = require('async-redis');
 const redisClient = redis.createClient({
-    host: config.getConfig().redis.host,
-    port: config.getConfig().redis.port,
-    password: config.getConfig().redis.password
+    host: config.get().redis.host,
+    port: config.get().redis.port,
+    password: config.get().redis.password
 });
-const GOOGLE_CREDENTIALS_FILE_PATH = config.getConfig().googleCredentialsFilePath;
+const GOOGLE_CREDENTIALS_FILE_PATH = config.get().googleCredentialsFilePath;
 const GOOGLE_API_SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
 const moment = require("moment");
 require('moment/locale/fr');
@@ -40,7 +40,7 @@ MembershipController.get = async function (req, res) {
     let rowsWithEmail = [];
     const sheets = MembershipController._buildSheetsApi();
     sheets.spreadsheets.values.get({
-        spreadsheetId: config.getConfig().spreadSheetId,
+        spreadsheetId: config.get().spreadSheetId,
         range: cellsRange,
     }, (err, sheetsRes) => {
         if (err) return console.log('The API returned an error: ' + err);
@@ -74,7 +74,7 @@ MembershipController.sendReminders = async function (req, res) {
     const sheets = MembershipController._buildSheetsApi();
     const remindersSent = [];
     sheets.spreadsheets.values.get({
-        spreadsheetId: config.getConfig().spreadSheetId,
+        spreadsheetId: config.get().spreadSheetId,
         range: cellsRange,
     }, async (err, sheetsRes) => {
         if (err) return console.log('The API returned an error: ' + err);
@@ -84,11 +84,6 @@ MembershipController.sendReminders = async function (req, res) {
             await Promise.all(rows.map(async (row) => {
                 row = new MembershipRow(row);
                 status = row.getStatus();
-                if (row.getEmail() === "yzandre@yahoo.com") {
-                    console.log("YAAAAAAAAA")
-                    console.log(status.status)
-                    console.log(status.reason)
-                }
                 let reminder;
                 const data = {
                     email: row.getEmail(),

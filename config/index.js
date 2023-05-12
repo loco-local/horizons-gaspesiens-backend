@@ -3,7 +3,7 @@ module.exports = {
   setEnvironment: function (environment) {
     config = require('./' + environment + '.json')
   },
-  getConfig: function () {
+  get: function () {
     return config
   }
 }

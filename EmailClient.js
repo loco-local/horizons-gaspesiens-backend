@@ -1,7 +1,7 @@
 const config = require('./config')
 const nodemailer = require('nodemailer')
 const sgMail = require('@sendgrid/mail')
-const isMock = config.getConfig().sendgrid === 'mock'
+const isMock = config.get().sendgrid === 'mock'
 let emailClient
 let transport
 if (isMock) {
@@ -9,7 +9,7 @@ if (isMock) {
   transport = Transport({})
   emailClient = nodemailer.createTransport(transport)
 } else {
-  sgMail.setApiKey(config.getConfig().sendgrid.key)
+  sgMail.setApiKey(config.get().sendgrid.key)
 }
 
 const sprintf = require('sprintf-js').sprintf

@@ -7,7 +7,7 @@ const compress = require('compression')
 const bodyParser = require('body-parser')
 const logger = require('morgan')
 config.setEnvironment(app.get('env'))
-if (!config.getConfig().noCompress) {
+if (!config.get().noCompress) {
     app.use(compress())
 }
 const cors = require('cors')
@@ -34,7 +34,7 @@ app.use(function (req, res, next) {
     next(err)
 })
 
-const port = config.getConfig().port || 4105
+const port = config.get().port || 4105
 server.listen(port, function () {
     console.log('hg backend app listening on environment port ' + port , app.get('env'))
 })
