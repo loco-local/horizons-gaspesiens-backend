@@ -32,6 +32,10 @@ router.get(
     '/events',
     EventController.list
 )
+router.post(
+    '/events',
+    EventController.add
+)
 router.get(
     '/events/colors',
     EventController.listColors

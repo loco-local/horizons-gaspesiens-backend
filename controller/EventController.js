@@ -4,7 +4,7 @@ const fs = require('fs').promises;
 const EventController = {}
 const CREDENTIALS_PATH = config.get().googleCredentialsFilePath;
 const TOKEN_PATH = config.get().googleCredentialsTokenPath;
-const SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
+const SCOPES = ['https://www.googleapis.com/auth/calendar.events'];
 const {google} = require('googleapis');
 EventController.listColors = async function (req, res) {
     let calendar = await EventController._buildCalendarApi();
@@ -23,6 +23,17 @@ EventController.list = async function (req, res) {
     });
     const events = response.data.items;
     res.send(events);
+}
+
+EventController.add = async function (req, res) {
+    let calendar = await EventController._buildCalendarApi();
+    const event = req.body;
+    const response = await calendar.events.insert({
+        calendarId: calendarId,
+        resource: event,
+    });
+    console.log(response)
+    res.sendStatus(200);
 }
 
 EventController._buildCalendarApi = function () {
