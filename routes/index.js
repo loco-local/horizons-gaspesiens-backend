@@ -36,6 +36,14 @@ router.post(
     '/events',
     EventController.add
 )
+router.put(
+    '/events/:eventId',
+    EventController.update
+)
+router.delete(
+    '/events/:eventId',
+    EventController.delete
+)
 router.get(
     '/events/colors',
     EventController.listColors
