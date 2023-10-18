@@ -202,7 +202,7 @@ MembershipController.buildReminder = async function (row, reminderKey, data, sen
                 shouldSend = false;
                 console.log("timestamp value is not a timestamp: " + emailDateStr);
             } else {
-                let emailDate = moment(new Date(emailDateStr));
+                let emailDate = moment(new Date(parseInt(emailDateStr)));
                 const daysSinceLastEmail = Now.get().diff(emailDate, 'days');
                 shouldSend = daysSinceLastEmail > daysBetweenEmails;
                 // console.log("email sent in past " + key + " email date " + emailDate + " email date str " + emailDateStr + " " + " daysSinceLastEmail " + daysSinceLastEmail + " shouldSend " + shouldSend);
