@@ -233,11 +233,12 @@ MembershipController._buildSheetsApi = function () {
 
 MembershipController._sendEmails = function (emails) {
     return Promise.all(emails.map(async (email) => {
-        await EmailClient.sendTemplateEmail(
-            email.email,
-            templatesId[email.type],
-            email.data
-        )
+        console.log("avoided sending email " + JSON.stringify(email))
+        // await EmailClient.sendTemplateEmail(
+        //     email.email,
+        //     templatesId[email.type],
+        //     email.data
+        // )
     }));
 }
 
