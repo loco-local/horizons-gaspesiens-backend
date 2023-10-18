@@ -185,7 +185,7 @@ MembershipController.sendReminders = async function (req, res) {
 // };
 
 MembershipController.buildReminder = async function (row, reminderKey, data, sendOnlyOnce) {
-    sendOnlyOnce = sendOnlyOnce | false;
+    sendOnlyOnce = sendOnlyOnce || false;
     if (row.doesNotWantToBeMember()) {
         // console.log(row.getEmail())
         return false;
