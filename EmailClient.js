@@ -12,15 +12,6 @@ if (isMock) {
   sgMail.setApiKey(config.get().sendgrid.key)
 }
 
-const sprintf = require('sprintf-js').sprintf
-const supportTextFR = {
-  text: 'Pour plus d\'information visitez la section support de notre site',
-  link: 'www.partageheure.com'
-}
-const supportTextEN = {
-  text: 'For more information visit the support section of our website',
-  link: 'www.partageheure.com'
-}
 const EmailClient = {
   client: emailClient,
   transport: transport,
@@ -52,33 +43,6 @@ const EmailClient = {
   },
   buildFrom: function (fromEmail) {
     return 'Loco Local <' + fromEmail + '>'
-  },
-  addSupportText: function (emailDescription, language) {
-    const content = language.toUpperCase() === 'FR' ? supportTextFR : supportTextEN
-    emailDescription.html += '<br><br>' + content.text + ' ' + '<a href=\'' + content.link + '\'>' + content.link + '</a>'
-  },
-  addEmailNumber: function (emailDescription, language, emailNumber) {
-    emailDescription.html += '<br><br>' + '<span style=\'color:#A9A9A9;\'>' + language.toUpperCase() + ' ' + emailNumber + '</span>'
-  },
-  buildEmailInLanguages: function (frenchContent, englishContent, dynamicData, emailNumber) {
-    return {
-      'FR': EmailClient._buildEmail(frenchContent, dynamicData, emailNumber, 'FR'),
-      'EN': EmailClient._buildEmail(englishContent, dynamicData, emailNumber, 'EN')
-    }
-  },
-  _buildEmail: function (emailText, dynamicData, emailNumber, locale) {
-    const sprintfArguments = [emailText.content].concat(dynamicData)
-    const emailContent = {
-      from: EmailClient.buildFrom(emailText.from),
-      subject: emailText.subject,
-      html: sprintf.apply(
-        null,
-        sprintfArguments
-      )
-    }
-    EmailClient.addSupportText(emailContent, locale)
-    EmailClient.addEmailNumber(emailContent, locale, emailNumber)
-    return emailContent
   }
 }
 module.exports = EmailClient

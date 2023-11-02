@@ -14,6 +14,7 @@ moment.locale('fr');
 const EmailClient = require("../EmailClient")
 const MembershipRow = require('../MembershipRow');
 const Now = require("../Now");
+const DateUtil = require("../DateUtil");
 const MembershipController = {};
 const daysBetweenEmails = 34;
 const welcomeEmailSinceMaxDays = 60;
@@ -32,7 +33,6 @@ templatesId[inactiveRenewEmail] = "d-6cca9a5b35314bf9b1d25bafcdd17f37";
 templatesId[expiresSoonEmail] = "d-e1e81b8e88c64e189dc096b6fd3833cb";
 templatesId[thankYouRenewEmail] = "d-90629f28f34846fcb5f64046fa6568ec";
 const cellsRange = 'A2:U';
-
 
 MembershipController.get = async function (req, res) {
     const {email} = req.body
@@ -185,7 +185,7 @@ MembershipController.sendReminders = async function (req, res) {
 // };
 
 MembershipController.buildReminder = async function (row, reminderKey, data, sendOnlyOnce) {
-    sendOnlyOnce = sendOnlyOnce | false;
+    sendOnlyOnce = sendOnlyOnce || false;
     if (row.doesNotWantToBeMember()) {
         // console.log(row.getEmail())
         return false;
@@ -198,9 +198,15 @@ MembershipController.buildReminder = async function (row, reminderKey, data, sen
         shouldSend = !emailSentInThePast;
     } else {
         if (emailSentInThePast) {
-            let emailDate = moment(emailDateStr);
-            const daysSinceLastEmail = Now.get().diff(emailDate, 'days');
-            shouldSend = daysSinceLastEmail > daysBetweenEmails;
+            if (!DateUtil.isStringATimestamp(emailDateStr)) {
+                shouldSend = false;
+                console.log("timestamp value is not a timestamp: " + emailDateStr);
+            } else {
+                let emailDate = moment(new Date(parseInt(emailDateStr)));
+                const daysSinceLastEmail = Now.get().diff(emailDate, 'days');
+                shouldSend = daysSinceLastEmail > daysBetweenEmails;
+                // console.log("email sent in past " + key + " email date " + emailDate + " email date str " + emailDateStr + " " + " daysSinceLastEmail " + daysSinceLastEmail + " shouldSend " + shouldSend);
+            }
         } else {
             shouldSend = true;
         }
