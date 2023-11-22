@@ -54,6 +54,9 @@ MembershipController.get = async function (req, res) {
                 return new MembershipRow(row);
             })
             if (rowsWithEmail.length) {
+                rowsWithEmail = rowsWithEmail.sort((a, b) => {
+                    return b.getDateFormFilled().toDate() - a.getDateFormFilled().toDate();
+                })
                 status = rowsWithEmail[0].getStatus();
             } else {
                 status = {
