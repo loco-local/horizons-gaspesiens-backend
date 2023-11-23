@@ -15,6 +15,7 @@ const EmailClient = require("../EmailClient")
 const MembershipRow = require('../MembershipRow');
 const Now = require("../Now");
 const DateUtil = require("../DateUtil");
+const RowsOfMember = require("../RowsOfMember");
 const MembershipController = {};
 const daysBetweenEmails = 34;
 const welcomeEmailSinceMaxDays = 60;
@@ -27,17 +28,17 @@ const neverPaidEmail = "never_paid_email";
 const expiresSoonEmail = "expires_soon_email";
 const thankYouRenewEmail = "thank_you_renew_email";
 const templatesId = {};
-templatesId[welcomeEmail] = "d-003ba183c0024264b7f2ea13616cddf5"
+const thankYouEmailTemplate = "d-90629f28f34846fcb5f64046fa6568ec"
+templatesId[welcomeEmail] = thankYouEmailTemplate;
 templatesId[neverPaidEmail] = "d-0f38412cd6b24aada90588b90747986d"
 templatesId[inactiveRenewEmail] = "d-6cca9a5b35314bf9b1d25bafcdd17f37";
 templatesId[expiresSoonEmail] = "d-e1e81b8e88c64e189dc096b6fd3833cb";
-templatesId[thankYouRenewEmail] = "d-90629f28f34846fcb5f64046fa6568ec";
+templatesId[thankYouRenewEmail] = thankYouEmailTemplate;
 const cellsRange = 'A2:U';
 
 MembershipController.get = async function (req, res) {
     const {email} = req.body
-    let emailToFind = email;
-    let rowsWithEmail = [];
+    let emailToFind = email.trim().toLowerCase();
     const sheets = MembershipController._buildSheetsApi();
     sheets.spreadsheets.values.get({
         spreadsheetId: config.get().spreadSheetId,
@@ -47,17 +48,16 @@ MembershipController.get = async function (req, res) {
         const rows = sheetsRes.data.values;
         let status;
         if (rows.length) {
-            rowsWithEmail = rows.filter((row) => {
+            const rowsOfMember = new RowsOfMember();
+            rows.forEach((row) => {
                 row = new MembershipRow(row);
-                return row.getEmail() === emailToFind.trim().toLowerCase();
-            }).map((row) => {
-                return new MembershipRow(row);
+                if (row.getEmail() === emailToFind) {
+                    rowsOfMember.addRow(row)
+                }
             })
-            if (rowsWithEmail.length) {
-                rowsWithEmail = rowsWithEmail.sort((a, b) => {
-                    return b.getDateFormFilled().toDate() - a.getDateFormFilled().toDate();
-                })
-                status = rowsWithEmail[0].getStatus();
+            const relevantRow = rowsOfMember.getRelevantRowForEmail(emailToFind)
+            if (relevantRow) {
+                status = relevantRow.row.getStatus();
             } else {
                 status = {
                     status: "inactive",
@@ -83,6 +83,7 @@ MembershipController.sendReminders = async function (req, res) {
         if (err) return console.log('The API returned an error: ' + err);
         const rows = sheetsRes.data.values;
         let status;
+        const rowsOfMember = new RowsOfMember()
         if (rows.length) {
             await Promise.all(rows.map(async (row) => {
                 row = new MembershipRow(row);
@@ -95,9 +96,6 @@ MembershipController.sendReminders = async function (req, res) {
                 let formFillDate = row.getDateFormFilled();
                 const daysSinceFormFill = Now.get().diff(formFillDate, 'days');
                 if (status.status === 'inactive') {
-                    // if (nbDaysBufferToRegisterPayment) {
-                    //     return
-                    // }
                     if (status.reason === 'no renewal date') {
                         if (daysSinceFormFill > nbDaysBufferToRegisterPayment) {
                             data.formDate = row.getDateFormFilledFormatted();
@@ -122,7 +120,7 @@ MembershipController.sendReminders = async function (req, res) {
                 } else {
                     const daysSinceMembership = Now.get().diff(row.getRenewalDate(), 'days');
                     if (daysSinceFormFill <= welcomeEmailSinceMaxDays && daysSinceMembership <= welcomeEmailSinceMaxDays) {
-                        data.memberSince = row.getRenewalDateFormatted();
+                        data.membershipDate = row.getRenewalDateFormatted();
                         reminder = await MembershipController.buildReminder(
                             row,
                             welcomeEmail,
@@ -141,7 +139,7 @@ MembershipController.sendReminders = async function (req, res) {
                     }
                     const daysSincePayment = Now.get().diff(row.getPaymentDate(), 'days');
                     if (daysSinceFormFill > 300 && daysSincePayment >= 0 && daysSincePayment < nbDaysWithinToSendThankYouRenewEmailAfterPayment) {
-                        data.renewDate = row.getRenewalDateFormatted();
+                        data.membershipDate = row.getRenewalDateFormatted();
                         reminder = await MembershipController.buildReminder(
                             row,
                             thankYouRenewEmail,
@@ -150,9 +148,12 @@ MembershipController.sendReminders = async function (req, res) {
                     }
                 }
                 if (reminder !== false && reminder !== undefined) {
-                    remindersSent.push(reminder);
+                    rowsOfMember.addRow(row, reminder)
                 }
             }));
+            rowsOfMember.getRelevantRows().forEach((row) => {
+                remindersSent.push(row.reminder);
+            })
             await MembershipController._sendEmails(remindersSent);
             console.log("finished sending nb reminders " + remindersSent.length + " " + Now.get().format());
             res.send(remindersSent);

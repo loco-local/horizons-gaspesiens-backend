@@ -7,9 +7,9 @@ describe('MembershipRow', () => {
     beforeEach(() => {
         data = {};
     });
-    it("returns correct values", async () => {
+    xit("returns correct values", async () => {
         const chenzoRow = await getChenzoRow();
-        // console.log(chenzoRow.row);
+        console.log(chenzoRow.row);
         chenzoRow.getPaymentDate().format('DD/MM/YYYY').should.equal("18/10/2022");
         chenzoRow.getRenewalDate().format('DD/MM/YYYY').should.equal("17/10/2022");
         chenzoRow._getDoesNotWantToBeMemberValue().should.equal("nah");

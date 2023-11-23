@@ -12,30 +12,30 @@ const sinon = require('sinon');
 const redis = require('async-redis');
 const moment = require("moment");
 
-let data = {};
+const FAKE_CURRENT_DATE = "23/10/2022"
+
+const TestUtil = {
+    data: {}
+};
 let redisClient = {
     'get': (key) => {
-        return data[key]
+        return TestUtil.data[key]
     },
     'set': (key, value) => {
-        data[key] = value;
+        TestUtil.data[key] = value;
     },
     'exits': (key) => {
-        return data.hasOwnProperty(key)
+        return TestUtil.data.hasOwnProperty(key)
     }
 }
 sinon.stub(redis,
     "createClient").callsFake(() => redisClient);
 sinon.stub(Now, "get").callsFake(() => {
     return moment(
-        "23/10/2022",
+        FAKE_CURRENT_DATE,
         'DD/MM/YYYY'
     )
 })
-
-const TestUtil = {
-    data: data
-};
 
 
 module.exports = TestUtil;

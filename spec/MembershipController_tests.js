@@ -12,20 +12,22 @@ describe('MembershipControllerTest', () => {
             .get('/api/membership/send_reminder')
         // console.log(res.body)
         const emails = getEmailsOfType(res.body, 'never_paid_email');
-        emails.length.should.equal(5);
+        // console.log(emails)
+        //the number who never paid is 8 but the date form is filled is lower than nbDaysBufferToRegisterPayment
+        emails.length.should.equal(6);
     });
 
     xit("avoid to sends never paid email if sent recently", async () => {
         let res = await chai.request(app)
             .get('/api/membership/send_reminder')
         let emails = getEmailsOfType(res.body, 'never_paid_email');
-        emails.length.should.equal(5);
+        emails.length.should.equal(6);
         TestUtil.data = {};
-        TestUtil.data['vincent.blouin@gmail.com' + '_never_paid_email'] = Now.get().toDate().getTime();
+        TestUtil.data['patatepoire@gmail.com' + '_never_paid_email'] = Now.get().subtract(2, 'days').toDate().getTime();
         res = await chai.request(app)
             .get('/api/membership/send_reminder')
         emails = getEmailsOfType(res.body, 'never_paid_email');
-        emails.length.should.equal(4);
+        emails.length.should.equal(5);
     });
 
     xit("sends never paid email again if sent more that a month ago", async () => {
@@ -34,28 +36,28 @@ describe('MembershipControllerTest', () => {
         let res = await chai.request(app)
             .get('/api/membership/send_reminder')
         let emails = getEmailsOfType(res.body, 'never_paid_email');
-        emails.length.should.equal(4);
+        emails.length.should.equal(6)
         const nbDaysAWhileBack = 35;
         TestUtil.data = {};
-        TestUtil.data['vincent.blouin@gmail.com' + '_never_paid_email'] = Now.get().subtract(nbDaysAWhileBack, 'days').toDate().getTime();
+        TestUtil.data['patatepoire@gmail.com' + '_never_paid_email'] = Now.get().subtract(nbDaysAWhileBack, 'days').toDate().getTime();
         res = await chai.request(app)
             .get('/api/membership/send_reminder')
         emails = getEmailsOfType(res.body, 'never_paid_email');
-        emails.length.should.equal(5);
+        emails.length.should.equal(6);
     });
 
     xit("sends welcome email for subscription in last 60 days", async () => {
         let res = await chai.request(app)
             .get('/api/membership/send_reminder')
         let emails = getEmailsOfType(res.body, 'welcome_email');
-        emails.length.should.equal(5);
+        emails.length.should.equal(17);
     });
 
     xit("only sends welcome email once", async () => {
         let res = await chai.request(app)
             .get('/api/membership/send_reminder')
         let emails = getEmailsOfType(res.body, 'welcome_email');
-        emails.length.should.equal(5);
+        emails.length.should.equal(17);
         res = await chai.request(app)
             .get('/api/membership/send_reminder')
         emails = getEmailsOfType(res.body, 'welcome_email');
@@ -66,8 +68,8 @@ describe('MembershipControllerTest', () => {
         let res = await chai.request(app)
             .get('/api/membership/send_reminder')
         let emails = getEmailsOfType(res.body, 'expires_soon_email');
-        emails.length.should.equal(1);
-        emails[0].data.expirationInDays.should.equal(8);
+        emails.length.should.equal(6);
+        emails[0].data.expirationInDays.should.equal(13);
         res = await chai.request(app)
             .get('/api/membership/send_reminder')
         emails = getEmailsOfType(res.body, 'expires_soon_email');
@@ -79,11 +81,17 @@ describe('MembershipControllerTest', () => {
         let res = await chai.request(app)
             .get('/api/membership/send_reminder')
         let emails = getEmailsOfType(res.body, 'thank_you_renew_email');
-        emails.length.should.equal(1);
+        emails.length.should.equal(3);
         res = await chai.request(app)
             .get('/api/membership/send_reminder')
         emails = getEmailsOfType(res.body, 'thank_you_renew_email');
         emails.length.should.equal(0);
+    });
+
+    xit("return status is member if one the rows says so", async () => {
+        let res = await chai.request(app)
+            .post('/api/membership').send({email: "orangenanane@gmail.com"})
+        res.body.status.should.equal("active")
     });
 
     function getEmailsOfType(emails, type) {
