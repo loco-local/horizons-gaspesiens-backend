@@ -68,6 +68,7 @@ describe('MembershipControllerTest', () => {
         let res = await chai.request(app)
             .get('/api/membership/send_reminder')
         let emails = getEmailsOfType(res.body, 'expires_soon_email');
+        //should exclude orangenanane@gmail.com
         emails.length.should.equal(6);
         emails[0].data.expirationInDays.should.equal(13);
         res = await chai.request(app)

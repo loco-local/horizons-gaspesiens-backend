@@ -31,10 +31,14 @@ let redisClient = {
 sinon.stub(redis,
     "createClient").callsFake(() => redisClient);
 sinon.stub(Now, "get").callsFake(() => {
-    return moment(
+    let nowFaked = moment(
         FAKE_CURRENT_DATE,
         'DD/MM/YYYY'
     )
+    sinon.stub(nowFaked, "weekday").callsFake(() => {
+        return 0
+    })
+    return nowFaked;
 })
 
 

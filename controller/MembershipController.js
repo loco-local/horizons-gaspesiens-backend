@@ -55,7 +55,7 @@ MembershipController.get = async function (req, res) {
                     rowsOfMember.addRow(row)
                 }
             })
-            const relevantRow = rowsOfMember.getRelevantRowForEmail(emailToFind)
+            const relevantRow = rowsOfMember.getStatusRelevantRowForEmail(emailToFind)
             if (relevantRow) {
                 status = relevantRow.row.getStatus();
             } else {
@@ -147,13 +147,30 @@ MembershipController.sendReminders = async function (req, res) {
                         );
                     }
                 }
-                if (reminder !== false && reminder !== undefined) {
-                    rowsOfMember.addRow(row, reminder)
-                }
+                rowsOfMember.addRow(row, reminder)
             }));
-            rowsOfMember.getRelevantRows().forEach((row) => {
+            rowsOfMember.getReminderRelevantRows().filter((row) => {
+                return row.reminder !== false && row.reminder !== undefined && row.reminder !== null
+            }).forEach((row) => {
                 remindersSent.push(row.reminder);
             })
+            const mondayWeekDay = 0
+            if (Now.get().weekday() === mondayWeekDay) {
+                let emailsInDuplicate = rowsOfMember.getEmailsHavingMultipleRows()
+                if (emailsInDuplicate.length === 0) {
+                    emailsInDuplicate = "Aucuns duplicats trouvés"
+                } else {
+                    emailsInDuplicate = emailsInDuplicate.join(",")
+                }
+                const emailsInDuplicateSendgridTemplate = "d-502c6df2ca5c4b35a9358d011cd4ccab";
+                await EmailClient.sendTemplateEmail(
+                    "horizonsgaspesiens@gmail.com",
+                    emailsInDuplicateSendgridTemplate,
+                    {
+                        emailsInDuplicate: emailsInDuplicate
+                    }
+                )
+            }
             await MembershipController._sendEmails(remindersSent);
             console.log("finished sending nb reminders " + remindersSent.length + " " + Now.get().format());
             res.send(remindersSent);
