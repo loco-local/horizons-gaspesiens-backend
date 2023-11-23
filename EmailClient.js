@@ -38,7 +38,7 @@ const EmailClient = {
         });
       });
     } else {
-      // return sgMail.send(msg)
+      return sgMail.send(msg)
     }
   },
   buildFrom: function (fromEmail) {
