@@ -226,7 +226,9 @@ MembershipController.buildReminder = async function (row, reminderKey, data, sen
                 let emailDate = moment(new Date(parseInt(emailDateStr)));
                 const daysSinceLastEmail = Now.get().diff(emailDate, 'days');
                 shouldSend = daysSinceLastEmail > daysBetweenEmails;
-                // console.log("email sent in past " + key + " email date " + emailDate + " email date str " + emailDateStr + " " + " daysSinceLastEmail " + daysSinceLastEmail + " shouldSend " + shouldSend);
+                const prefix = shouldSend ? "sending because it's been long enough between emails " : "prevented to send email";
+                console.log(prefix + " " + key + " email date " + emailDate + " email date str " + emailDateStr + " " + " daysSinceLastEmail " + daysSinceLastEmail + " shouldSend " + shouldSend);
+
             }
         } else {
             shouldSend = true;
@@ -253,13 +255,13 @@ MembershipController._buildSheetsApi = function () {
 };
 
 MembershipController._sendEmails = function (emails) {
-    return Promise.all(emails.map(async (email) => {
-        await EmailClient.sendTemplateEmail(
-            email.email,
-            templatesId[email.type],
-            email.data
-        )
-    }));
+    // return Promise.all(emails.map(async (email) => {
+    //     await EmailClient.sendTemplateEmail(
+    //         email.email,
+    //         templatesId[email.type],
+    //         email.data
+    //     )
+    // }));
 }
 
 MembershipController._getCellsRange = function () {
