@@ -17,9 +17,9 @@ const Now = require("../Now");
 const DateUtil = require("../DateUtil");
 const RowsOfMember = require("../RowsOfMember");
 const MembershipController = {};
-const daysBetweenEmails = 34;
+const daysBetweenEmails = 300;
 const welcomeEmailSinceMaxDays = 60;
-const nbDaysBufferToRegisterPayment = 37;
+const nbDaysBufferToRegisterPayment = 50;
 const nbDaysBeforeExpirationForReminder = 15;
 const nbDaysWithinToSendThankYouRenewEmailAfterPayment = 5;
 const inactiveRenewEmail = "inactive_renew_email";
@@ -255,13 +255,13 @@ MembershipController._buildSheetsApi = function () {
 };
 
 MembershipController._sendEmails = function (emails) {
-    // return Promise.all(emails.map(async (email) => {
-    //     await EmailClient.sendTemplateEmail(
-    //         email.email,
-    //         templatesId[email.type],
-    //         email.data
-    //     )
-    // }));
+    return Promise.all(emails.map(async (email) => {
+        await EmailClient.sendTemplateEmail(
+            email.email,
+            templatesId[email.type],
+            email.data
+        )
+    }));
 }
 
 MembershipController._getCellsRange = function () {
