@@ -1,6 +1,6 @@
 {
   "useMinify": false,
-  "googleCredentialsFilePath": "/home/chenzo/Projects/loco-local/membres-google-credentials-local.json",
+  "googleCredentialsFilePath": "/home/chenzo/Documents/Site web loco local/membres-google-credentials-local.json",
   "googleCredentialsTokenPath": "/home/chenzo/Documents/Site web loco local/token.json",
   "spreadSheetId": "163GJaCz2urQ9PaRtXNxp-FUkQ02gU9O94TEj80-gFHk",
   "sendgrid" : "mock",

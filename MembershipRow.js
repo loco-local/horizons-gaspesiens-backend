@@ -27,7 +27,8 @@ MembershipRow.prototype.getStatus = function () {
             reason: "no renewal date"
         };
     }
-    renewalDate = moment(renewalDate, "DD/MM/YYYY").add(1, 'Y').toDate()
+    renewalDate = this._parseDateAtIndex(SUBSCRIPTION_RENEWAL_DATE_INDEX)
+    renewalDate = renewalDate.add(1, 'Y').toDate()
     const isActive = Now.get().toDate() < renewalDate;
     return {
         status: isActive ? "active" : "inactive",
@@ -47,10 +48,7 @@ MembershipRow.prototype.getDateFormFilledFormatted = function () {
 };
 
 MembershipRow.prototype.getRenewalDate = function () {
-    return moment(
-        this.row[SUBSCRIPTION_RENEWAL_DATE_INDEX],
-        'DD/MM/YYYY'
-    );
+    return this._parseDateAtIndex(SUBSCRIPTION_RENEWAL_DATE_INDEX)
 };
 
 MembershipRow.prototype.getRenewalDateFormatted = function () {
@@ -58,10 +56,7 @@ MembershipRow.prototype.getRenewalDateFormatted = function () {
 };
 
 MembershipRow.prototype.getPaymentDate = function () {
-    return moment(
-        this.row[PAYMENT_DATE_INDEX],
-        'DD/MM/YYYY'
-    );
+    return this._parseDateAtIndex(PAYMENT_DATE_INDEX)
 };
 
 
@@ -84,6 +79,16 @@ MembershipRow.prototype._getDoesNotWantToBeMemberValue = function () {
 
 MembershipRow.prototype.getFirstname = function () {
     return this.row[FIRST_NAME_INDEX];
+}
+
+MembershipRow.prototype._parseDateAtIndex = function (index) {
+    const dateText = this.row[index]
+    const doesDateStartWithYear = dateText.indexOf("/") >= 4;
+    const dateFormat = doesDateStartWithYear ? 'YYYY/MM/DD' : 'DD/MM/YYYY'
+    return moment(
+        dateText,
+        dateFormat
+    )
 }
 
 module.exports = MembershipRow;
