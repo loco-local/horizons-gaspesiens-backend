@@ -1,9 +1,7 @@
 const config = require("../config");
 const calendarId = config.get().calendarId;
-const fs = require('fs').promises;
 const EventController = {}
 const CREDENTIALS_PATH = config.get().googleCredentialsFilePath;
-const TOKEN_PATH = config.get().googleCredentialsTokenPath;
 const SCOPES = ['https://www.googleapis.com/auth/calendar.events'];
 const {google} = require('googleapis');
 EventController.listColors = async function (req, res) {
