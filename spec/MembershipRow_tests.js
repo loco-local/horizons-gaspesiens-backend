@@ -3,6 +3,8 @@ let data = {};
 const config = require("../config");
 const MembershipController = require("../controller/MembershipController");
 const MembershipRow = require("../MembershipRow");
+const SheetsApiBuilder = require("../SheetsApiBuilder");
+const SpreadsheetRowsOfMembership = require("../SpreadsheetRowsOfMembership");
 describe('MembershipRow', () => {
     beforeEach(() => {
         data = {};
@@ -12,7 +14,7 @@ describe('MembershipRow', () => {
         console.log(chenzoRow.row);
         chenzoRow.getPaymentDate().format('DD/MM/YYYY').should.equal("18/10/2022");
         chenzoRow.getRenewalDate().format('DD/MM/YYYY').should.equal("17/10/2022");
-        chenzoRow._getDoesNotWantToBeMemberValue().should.equal("nah");
+        chenzoRow.getDoesNotWantToBeMemberValue().should.equal("valeur_pour_confirmer_test_du_code");
     });
 
     xit("returns correct values", async () => {
@@ -20,7 +22,7 @@ describe('MembershipRow', () => {
         console.log(chenzoRow.row);
         chenzoRow.getPaymentDate().format('DD/MM/YYYY').should.equal("18/10/2022");
         chenzoRow.getRenewalDate().format('DD/MM/YYYY').should.equal("17/10/2022");
-        chenzoRow._getDoesNotWantToBeMemberValue().should.equal("nah");
+        chenzoRow.getDoesNotWantToBeMemberValue().should.equal("valeur_pour_confirmer_test_du_code");
     });
 
     xit("can have inverse date", async () => {
@@ -28,27 +30,27 @@ describe('MembershipRow', () => {
         console.log(inverseDateRow.row);
         inverseDateRow.getPaymentDate().format('DD/MM/YYYY').should.equal("05/02/2024");
         inverseDateRow.getRenewalDate().format('DD/MM/YYYY').should.equal("05/02/2024");
-        inverseDateRow._getDoesNotWantToBeMemberValue().should.equal("nah");
+        inverseDateRow.getDoesNotWantToBeMemberValue().should.equal("nah");
     });
 
     async function getChenzoRow() {
         return _getRowWithEmail(
-            "vincent.blouin@gmail.com"
+            "vincent.blouin@gmail.test"
         )
     }
 
     async function getInverseDateRow() {
         return _getRowWithEmail(
-            "date@inverse.com"
+            "date@inverse.test"
         )
     }
 
     async function _getRowWithEmail(email) {
-        const sheets = MembershipController._buildSheetsApi();
+        const sheets = SheetsApiBuilder.build()
         return new Promise((resolve) => {
             sheets.spreadsheets.values.get({
                 spreadsheetId: config.get().spreadSheetId,
-                range: MembershipController._getCellsRange(),
+                range: SpreadsheetRowsOfMembership._getCellsRange(),
             }, (err, sheetsRes) => {
                 if (err) return console.log('The API returned an error: ' + err);
                 const rows = sheetsRes.data.values;

@@ -95,6 +95,12 @@ describe('MembershipControllerTest', () => {
         res.body.status.should.equal("active")
     });
 
+    xit("return status is member if one the rows says so", async () => {
+        let res = await chai.request(app)
+            .post('/api/membership').send({email: "orangenanane@gmail.test"})
+        res.body.status.should.equal("active")
+    });
+
     function getEmailsOfType(emails, type) {
         return emails.filter((email) => {
             return email.type === type;
