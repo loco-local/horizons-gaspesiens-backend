@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const MembershipController = require('../controller/MembershipController')
 const EventController = require('../controller/EventController')
+const FinanceController = require('../controller/FinanceController')
 
 router.post(
     '/membership',
@@ -47,6 +48,11 @@ router.delete(
 router.get(
     '/events/colors',
     EventController.listColors
+)
+
+router.get(
+    '/accounts',
+    FinanceController.listAccounts
 )
 
 module.exports = router
