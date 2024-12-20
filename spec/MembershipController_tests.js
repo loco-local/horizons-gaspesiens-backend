@@ -1,11 +1,11 @@
 const chai = require('chai');
 const Now = require("../Now");
 const TestUtil = require("./TestUtil");
-
+const RedisProvider = require('../RedisProvider');
 let app = require('../app');
 describe('MembershipControllerTest', () => {
     beforeEach(() => {
-        TestUtil.data = {};
+        RedisProvider.data = {};
     });
     xit("sends never paid email", async () => {
         let res = await chai.request(app)
@@ -22,8 +22,8 @@ describe('MembershipControllerTest', () => {
             .get('/api/membership/send_reminder')
         let emails = getEmailsOfType(res.body, 'never_paid_email');
         emails.length.should.equal(6);
-        TestUtil.data = {};
-        TestUtil.data['patatepoire@gmail.test' + '_never_paid_email'] = Now.get().subtract(2, 'days').toDate().getTime();
+        RedisProvider.data = {};
+        RedisProvider.data['patatepoire@gmail.test' + '_never_paid_email'] = Now.get().subtract(2, 'days').toDate().getTime();
         res = await chai.request(app)
             .get('/api/membership/send_reminder')
         emails = getEmailsOfType(res.body, 'never_paid_email');
@@ -32,14 +32,14 @@ describe('MembershipControllerTest', () => {
 
     xit("sends never paid email again if sent after more than 300 days", async () => {
         const nbDaysNotSoLongAgo = 10;
-        TestUtil.data['vincent.blouin@gmail.test' + '_never_paid_email'] = Now.get().subtract(nbDaysNotSoLongAgo, 'days').toDate().getTime();
+        RedisProvider.data['vincent.blouin@gmail.test' + '_never_paid_email'] = Now.get().subtract(nbDaysNotSoLongAgo, 'days').toDate().getTime();
         let res = await chai.request(app)
             .get('/api/membership/send_reminder')
         let emails = getEmailsOfType(res.body, 'never_paid_email');
         emails.length.should.equal(6)
         const nbDaysAWhileBack = 301;
-        TestUtil.data = {};
-        TestUtil.data['patatepoire@gmail.test' + '_never_paid_email'] = Now.get().subtract(nbDaysAWhileBack, 'days').toDate().getTime();
+        RedisProvider.data = {};
+        RedisProvider.data['patatepoire@gmail.test' + '_never_paid_email'] = Now.get().subtract(nbDaysAWhileBack, 'days').toDate().getTime();
         res = await chai.request(app)
             .get('/api/membership/send_reminder')
         emails = getEmailsOfType(res.body, 'never_paid_email');

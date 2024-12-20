@@ -14,10 +14,7 @@ const RedisMock = require('../RedisProvider');
 
 const FAKE_CURRENT_DATE = "23/10/2022"
 
-const TestUtil = {
-    data: {}
-};
 
-RedisMock.build(TestUtil.data);
+const TestUtil = {};
 
 module.exports = TestUtil;

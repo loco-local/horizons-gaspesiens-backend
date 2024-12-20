@@ -8,10 +8,10 @@ const FAKE_CURRENT_DATE = "23/10/2022"
 
 
 const RedisProvider = {
-    build: function (data) {
-        data = data || {};
+    data: {},
+    build: function () {    
         if (config.get().redis === "mock") {
-            return RedisProvider._setupMock(data);
+            return RedisProvider._setupMock();
         } else {
             return RedisProvider._setupNonMock();
         }
@@ -24,8 +24,7 @@ const RedisProvider = {
             password: config.get().redis.password
         });
     },
-    _setupMock: function (data) {
-        RedisProvider.data = data;
+    _setupMock: function (data) {        
         let redisClient = {
             'get': (key) => {
                 return RedisProvider.data[key]

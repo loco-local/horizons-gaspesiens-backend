@@ -1,5 +1,4 @@
 require("./TestUtil");
-let data = {};
 const config = require("../config");
 const MembershipController = require("../controller/MembershipController");
 const MembershipRow = require("../MembershipRow");
@@ -7,7 +6,7 @@ const SheetsApiBuilder = require("../SheetsApiBuilder");
 const SpreadsheetRowsOfMembership = require("../SpreadsheetRowsOfMembership");
 describe('MembershipRow', () => {
     beforeEach(() => {
-        data = {};
+    
     });
     xit("returns correct values", async () => {
         const chenzoRow = await getChenzoRow();
