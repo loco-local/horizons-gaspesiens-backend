@@ -14,6 +14,11 @@ router.get(
     MembershipController.sendReminders
 )
 
+router.post(
+    '/membership/reminders',
+    MembershipController.listReminderStatus
+)
+
 // router.get(
 //     '/membership/test_email',
 //     MembershipController.testSendgrid

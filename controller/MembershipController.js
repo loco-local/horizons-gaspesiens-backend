@@ -1,10 +1,8 @@
+
+const RedisProvider = require('../RedisProvider');
+const redisClient = RedisProvider.build()
+
 const config = require('../config')
-const redis = require('async-redis');
-const redisClient = redis.createClient({
-    host: config.get().redis.host,
-    port: config.get().redis.port,
-    password: config.get().redis.password
-});
 const moment = require("moment");
 require('moment/locale/fr');
 moment.locale('fr');
@@ -36,7 +34,7 @@ templatesId[thankYouRenewEmail] = thankYouEmailTemplate;
 
 
 MembershipController.get = async function (req, res) {
-    const {email} = req.body
+    const { email } = req.body
     let emailToFind = email.trim().toLowerCase();
     const rows = await SpreadsheetRowsOfMembership.get();
     if (rows === false) {
@@ -173,6 +171,30 @@ MembershipController.sendReminders = async function (req, res) {
     await MembershipController._sendEmails(remindersSent);
     console.log("finished sending nb reminders " + remindersSent.length + " " + Now.get().format());
     res.send(remindersSent);
+};
+
+MembershipController.listReminderStatus = async function (req, res) {
+    if (config.get().remindersListPassword !== req.body.remindersListPassword) {
+        return res.sendStatus(401);
+    }
+    const reminders = {};
+    let error = false;
+    redisClient.keys("*", async function (err, keys) {
+        if (err) {
+            error = err;
+            return;
+        }
+        for (const key of keys) {
+            let value = await redisClient.get(key);
+            reminders[key] = value;
+        }
+    });
+    if (error) {
+        return res.send({
+            error: error
+        })
+    }
+    res.send({ reminders })
 };
 
 // MembershipController.testSendgrid = async function (req, res) {
