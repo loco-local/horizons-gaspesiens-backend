@@ -32,8 +32,8 @@ const RedisProvider = {
             'exits': (key) => {
                 return RedisProvider.data.hasOwnProperty(key)
             },
-            'keys': (query, callback) => {
-                callback(false, Object.keys(RedisProvider.data))
+            'keys': () => {
+                return Object.keys(RedisProvider.data);
             }
         }
         sinon.stub(redis,

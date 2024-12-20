@@ -179,16 +179,11 @@ MembershipController.listReminderStatus = async function (req, res) {
     }
     const reminders = {};
     let error = false;
-    redisClient.keys("*", async function (err, keys) {
-        if (err) {
-            error = err;
-            return;
-        }
-        for (const key of keys) {
-            let value = await redisClient.get(key);
-            reminders[key] = value;
-        }
-    });
+    const keys = await redisClient.keys("*");
+    for (const key of keys) {
+        let value = await redisClient.get(key);
+        reminders[key] = value;
+    }
     if (error) {
         return res.send({
             error: error
