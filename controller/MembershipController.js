@@ -177,19 +177,23 @@ MembershipController.listReminderStatus = async function (req, res) {
     if (config.get().remindersListPassword !== req.body.remindersListPassword) {
         return res.sendStatus(401);
     }
-    const reminders = {};
+    let reminders = {};
     let error = false;
     const keys = await redisClient.keys("*");
     for (const key of keys) {
         let value = await redisClient.get(key);
-        reminders[key] = value;
+        if(key.indexOf("@") > -1){
+            reminders[key] = value;
+        }    
     }
     if (error) {
         return res.send({
             error: error
         })
     }
-    res.send({ reminders })
+    res.send({
+        reminders
+    });
 };
 
 // MembershipController.testSendgrid = async function (req, res) {
