@@ -1,15 +1,8 @@
 const config = require('./config')
-const sinon = require('sinon');
-const Now = require("./Now");
 const redis = require('async-redis');
-const moment = require("moment");
-
-const FAKE_CURRENT_DATE = "23/10/2022"
-
-
 const RedisProvider = {
     data: {},
-    build: function () {    
+    build: function () {
         if (config.get().redis === "mock") {
             return RedisProvider._setupMock();
         } else {
@@ -24,7 +17,11 @@ const RedisProvider = {
             password: config.get().redis.password
         });
     },
-    _setupMock: function (data) {        
+    _setupMock: function () {
+        const sinon = require('sinon');
+        const Now = require("./Now");
+        const moment = require("moment");
+        const FAKE_CURRENT_DATE = "23/10/2022"
         let redisClient = {
             'get': (key) => {
                 return RedisProvider.data[key]
@@ -35,8 +32,8 @@ const RedisProvider = {
             'exits': (key) => {
                 return RedisProvider.data.hasOwnProperty(key)
             },
-            'keys':(query, callback)=>{            
-                callback(false, Object.keys(RedisProvider.data))                
+            'keys': (query, callback) => {
+                callback(false, Object.keys(RedisProvider.data))
             }
         }
         sinon.stub(redis,
