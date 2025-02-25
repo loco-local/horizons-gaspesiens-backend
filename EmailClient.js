@@ -18,7 +18,7 @@ const EmailClient = {
   sendTemplateEmail: function (to, template, variables) {
     let msg = {
       to: to,
-      from: EmailClient.buildFrom("horizonsgaspesiens@gmail.com"),
+      from: EmailClient.buildFrom("admin@loco-local.net"),
       templateId: template,
       dynamic_template_data: variables
     };
