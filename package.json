@@ -8,8 +8,8 @@
     "server-test": "mocha spec --exit --timeout 10000",
     "test": "npm run server-test"
   },
-  "dependencies": {
-    "@sendgrid/mail": "^7.7.0",
+  "dependencies": {    
+    "resend": "6.0.3",
     "async-redis": "^2.0.0",
     "compression": "^1.7.4",
     "cors": "^2.8.5",

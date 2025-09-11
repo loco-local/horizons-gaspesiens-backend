@@ -5,10 +5,11 @@
   "googleCredentialsTokenPath": "/home/chenzo/Documents/Site web loco local/token.json",
   "spreadSheetId": "163GJaCz2urQ9PaRtXNxp-FUkQ02gU9O94TEj80-gFHk",
   "memberEmailToTestIntegrityOfSpreadsheet": "vincent.blouin@gmail.test",
-  "sendgrid": "mock",
+  "resend": "mock",
   "calendarId": "kg43q7s4qltiom7s1gntdhts3k@group.calendar.google.com",
   "redis": "mock",
   "remindersListPassword": "12",
   "waveAccounting": "",
-  "waveHgBusinessId": ""
+  "waveHgBusinessId": "",
+  "comiteeURL" : "http://comiteeURL"
 }

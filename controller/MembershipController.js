@@ -6,33 +6,34 @@ const config = require('../config')
 const moment = require("moment");
 require('moment/locale/fr');
 moment.locale('fr');
-const EmailClient = require("../EmailClient")
+const EmailClient = require("../email/EmailClient")
 const MembershipRow = require('../MembershipRow');
 const Now = require("../Now");
 const DateUtil = require("../DateUtil");
 const RowsOfMember = require("../RowsOfMember");
 const SpreadsheetRowsOfMembership = require("../SpreadsheetRowsOfMembership");
 const UpToDateWithSpreadsheetColumnsValidator = require("../UpToDateWithSpreadsheetColumnsValidator");
-const MembershipController = {};
+const InactiveRenewEmail = require('../email/InactiveRenewEmail');
+const WelcomeEmail = require('../email/WelcomeEmail');
+const NeverPaidEmail = require('../email/NeverPaidEmail');
+const ExpireSoonEmail = require('../email/ExpireSoonEmail');
+const DuplicatesEmail = require('../email/DuplicatesEmail');
+
+
 const daysBetweenEmails = 300;
 const welcomeEmailSinceMaxDays = 60;
 const nbDaysBufferToRegisterPayment = 50;
 const nbDaysBeforeExpirationForReminder = 15;
 const nbDaysWithinToSendThankYouRenewEmailAfterPayment = 5;
+
 const inactiveRenewEmail = "inactive_renew_email";
 const welcomeEmail = "welcome_email";
 const neverPaidEmail = "never_paid_email";
 const expiresSoonEmail = "expires_soon_email";
 const thankYouRenewEmail = "thank_you_renew_email";
-const templatesId = {};
-const thankYouEmailTemplate = "d-90629f28f34846fcb5f64046fa6568ec"
-templatesId[welcomeEmail] = thankYouEmailTemplate;
-templatesId[neverPaidEmail] = "d-0f38412cd6b24aada90588b90747986d"
-templatesId[inactiveRenewEmail] = "d-6cca9a5b35314bf9b1d25bafcdd17f37";
-templatesId[expiresSoonEmail] = "d-e1e81b8e88c64e189dc096b6fd3833cb";
-templatesId[thankYouRenewEmail] = thankYouEmailTemplate;
 
 
+const MembershipController = {};
 MembershipController.get = async function (req, res) {
     const { email } = req.body
     let emailToFind = email.trim().toLowerCase();
@@ -159,10 +160,8 @@ MembershipController.sendReminders = async function (req, res) {
         } else {
             emailsInDuplicate = emailsInDuplicate.join(",")
         }
-        const emailsInDuplicateSendgridTemplate = "d-502c6df2ca5c4b35a9358d011cd4ccab";
-        await EmailClient.sendTemplateEmail(
+        await DuplicatesEmail.send(
             "horizonsgaspesiens@gmail.com",
-            emailsInDuplicateSendgridTemplate,
             {
                 emailsInDuplicate: emailsInDuplicate
             }
@@ -182,9 +181,9 @@ MembershipController.listReminderStatus = async function (req, res) {
     const keys = await redisClient.keys("*");
     for (const key of keys) {
         let value = await redisClient.get(key);
-        if(key.indexOf("@") > -1){
+        if (key.indexOf("@") > -1) {
             reminders[key] = value;
-        }    
+        }
     }
     if (error) {
         return res.send({
@@ -263,12 +262,33 @@ MembershipController.buildReminder = async function (row, reminderKey, data, sen
 
 MembershipController._sendEmails = function (emails) {
     return Promise.all(emails.map(async (email) => {
-        await EmailClient.sendTemplateEmail(
+        const emailTemplate = MembershipController._getEmailTemplateForType(
+            email.type
+        );
+        if (emailTemplate === null) {
+            return console.error(`cannot find template ${email.type}`)
+        }
+        await emailTemplate.send(
             email.email,
-            templatesId[email.type],
             email.data
         )
     }));
+}
+
+MembershipController._getEmailTemplateForType = function (type) {
+    switch (type) {
+        case inactiveRenewEmail:
+            return InactiveRenewEmail
+        case welcomeEmail:
+            return WelcomeEmail;
+        case welcomeEmail:
+            return WelcomeEmail;
+        case neverPaidEmail:
+            return NeverPaidEmail;
+        case expiresSoonEmail:
+            return ExpireSoonEmail;
+        default: return null;
+    }
 }
 
 MembershipController._sendCodeNotUpToDateWithSpreadsheetColumnsAlertEmail = async function (isValid) {
