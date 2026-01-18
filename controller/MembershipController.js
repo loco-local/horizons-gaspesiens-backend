@@ -22,7 +22,7 @@ const DuplicatesEmail = require('../email/DuplicatesEmail');
 
 const daysBetweenEmails = 300;
 const welcomeEmailSinceMaxDays = 60;
-const nbDaysBufferToRegisterPayment = 50;
+const nbDaysBufferToRegisterPayment = 70;
 const nbDaysBeforeExpirationForReminder = 15;
 const nbDaysWithinToSendThankYouRenewEmailAfterPayment = 5;
 
